@@ -1,0 +1,39 @@
+Namelist for CHyM coupled model
+
+NLON: 
+6313
+NLAT:
+5304
+ISREAD: Read initialization file ( 0 = start from rest, 1 = read model initialization file)
+0
+ISWRIT: time step for writing a restart file (0 = No)
+360
+NDSTEP : Time step of the model (hours)
+24
+NSTEP : Number of time steps (days) the model should run 4749
+1800
+NDTST : Number of steps per hour
+300
+NINIRUN : Start timestep of input runoff data. Put 0 to start from first timestep
+0
+TSDATE : Start date of this run in the format YYYYMMDDHH (Integer)
+1976010101
+TEDATE : End date of this run in the format YYYYMMDDHH (Integer) 
+2070010101
+TDNCAL: calendario
+Gregorian
+TDNSIM: Simulation name (used for output file name and restart file name)
+CLMcom-CCLM4-8-17/sim_name
+TDNINP: File name of input runoff data
+input/mrro
+TDNINI: File name of CHyM model initialization file
+output/chym_rst_20210101.nc
+TDNOUT: File name of CHyM model output file
+CLMcom-CCLM4-8-17/chym_dis_1971_old_2000.nc
+TDNQMAX: File name of CHyM model qmax file
+CLMcom-CCLM4-8-17/qmax_1971.nc
+TDNRES: File name of CHyM model restart file 
+CLMcom-CCLM4-8-17/chym_res_1971_old_2000.nc
+TDNSTK: File name of CHyM input static fields file
+filestatic_old.nc
+The End
