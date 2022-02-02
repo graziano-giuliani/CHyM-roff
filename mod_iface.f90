@@ -195,7 +195,9 @@
             '_rst.nc'
         write(filenameqmax,'(a,a)') trim(sim_name)//'_',trim(tsdate)// &
             '_qmax.nc'
+        print*,"Create output file"
         call createfile(trim(filename),time)
+        print*,"End creation output file"
 
         if (iswrit /= 0) then
         end if

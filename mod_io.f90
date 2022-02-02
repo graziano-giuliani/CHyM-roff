@@ -184,29 +184,29 @@
       if (myid == 0 ) then 
       print*,"Inizio lettura statico file:", trim(filestatic)
       call nio_check(nf90_open(trim(filestatic),                        &
-         nf90_nowrite, ncid))
-      call nio_check(nf90_inq_varid(ncid, 'lon', varid))
-      call nio_check(nf90_get_var(ncid, varid, lon1(:)))
+         nf90_nowrite, ncid),1)
+      call nio_check(nf90_inq_varid(ncid, 'lon', varid),2)
+      call nio_check(nf90_get_var(ncid, varid, lon1(:)),3)
 
-      call nio_check(nf90_inq_varid(ncid, 'lat', varid))
-      call nio_check(nf90_get_var(ncid, varid, lat1(:)))
+      call nio_check(nf90_inq_varid(ncid, 'lat', varid),4)
+      call nio_check(nf90_get_var(ncid, varid, lat1(:)),5)
 
-      call nio_check(nf90_inq_varid(ncid, 'fdm', varid))
-      call nio_check(nf90_get_var(ncid, varid, fmap(:,:)))
+      call nio_check(nf90_inq_varid(ncid, 'fdm', varid),6)
+      call nio_check(nf90_get_var(ncid, varid, fmap(:,:)),7)
 
-      call nio_check(nf90_inq_varid(ncid, 'acc', varid))
-      call nio_check(nf90_get_var(ncid, varid, accl(:,:)))
+      call nio_check(nf90_inq_varid(ncid, 'acc', varid),8)
+      call nio_check(nf90_get_var(ncid, varid, accl(:,:)),9)
 
-      call nio_check(nf90_inq_varid(ncid, 'lus', varid))
-      call nio_check(nf90_get_var(ncid, varid, luse(:,:)))
+      call nio_check(nf90_inq_varid(ncid, 'lus', varid),10)
+      call nio_check(nf90_get_var(ncid, varid, luse(:,:)),11)
 
-      call nio_check(nf90_inq_varid(ncid, 'aer', varid))
-      call nio_check(nf90_get_var(ncid, varid, chym_area(:,:)))
+      call nio_check(nf90_inq_varid(ncid, 'aer', varid),12)
+      call nio_check(nf90_get_var(ncid, varid, chym_area(:,:)),13)
 
-      call nio_check(nf90_inq_varid(ncid, 'dra', varid))
-      call nio_check(nf90_get_var(ncid, varid, chym_drai(:,:)))
+      call nio_check(nf90_inq_varid(ncid, 'dra', varid),14)
+      call nio_check(nf90_get_var(ncid, varid, chym_drai(:,:)),15)
 
-      call nio_check(nf90_close(ncid))
+      call nio_check(nf90_close(ncid),16)
       
       end if
       call mpi_bcast(lon1(1),nlc,MPI_REAL, 0,mycomm,mpierr) 
@@ -238,7 +238,7 @@
     fcentury = .true.
     chunksizes(1) = nlon/5
     chunksizes(2) = nlat/5
-    chunksizes(2) = 1
+    chunksizes(3) = 1
 
 !-----------------------------------------------------------------------
 !     Create netCDF file 
@@ -257,29 +257,29 @@
 !-----------------------------------------------------------------------
 !
     call nio_check(nf90_def_dim(chymout%ncid, 'lon',                  &
-                                nlc, chymout%dimid(1)))
+                                nlc, chymout%dimid(1)),101)
     call nio_check(nf90_def_dim(chymout%ncid, 'lat',                  &
-                                nbc, chymout%dimid(2)))
+                                nbc, chymout%dimid(2)),102)
     call nio_check(nf90_def_dim(chymout%ncid, 'time',                 &
-                                nf90_unlimited, chymout%dimid(3)))
+                                nf90_unlimited, chymout%dimid(3)),103)
 !
 !-----------------------------------------------------------------------
 !     Define dimension variables 
 !-----------------------------------------------------------------------
 !
     call nio_check(nf90_def_var(chymout%ncid, 'lon', nf90_real,       &
-                   chymout%dimid(1), chymout%varid(1)))
+                   chymout%dimid(1), chymout%varid(1)),104)
     call nio_check(nf90_put_att(chymout%ncid, chymout%varid(1),       &
-                   'long_name', 'Longitude'))
+                   'long_name', 'Longitude'),105)
     call nio_check(nf90_put_att(chymout%ncid, chymout%varid(1),       &
-                   'units', 'degrees_east'))
+                   'units', 'degrees_east'),106)
 !
     call nio_check(nf90_def_var(chymout%ncid, 'lat', nf90_real,       &
-                   chymout%dimid(2), chymout%varid(2)))
+                   chymout%dimid(2), chymout%varid(2)),107)
     call nio_check(nf90_put_att(chymout%ncid, chymout%varid(2),       &
-                   'long_name', 'Latitude'))
+                   'long_name', 'Latitude'),108)
     call nio_check(nf90_put_att(chymout%ncid, chymout%varid(2),       &
-                   'units', 'degrees_north'))
+                   'units', 'degrees_north'),109)
 !
       write(amese,'(i10)') edate
       call gmafromindex(ncdata,hour0,day0,month0,year0)
@@ -314,54 +314,54 @@
            'seconds since ',year0,'-',month0,'-',day0,' ',hour0, &
           ':00:00 UTC'
 
-    call nio_check(nf90_put_att(chymout%ncid,nf90_global,'date_start',isodate0))
-    call nio_check(nf90_put_att(chymout%ncid,nf90_global,'date_end',isodate1))
+    call nio_check(nf90_put_att(chymout%ncid,nf90_global,'date_start',isodate0),111)
+    call nio_check(nf90_put_att(chymout%ncid,nf90_global,'date_end',isodate1),112)
     call nio_check(nf90_def_var(chymout%ncid, 'time', nf90_double,       &
-                   chymout%dimid(3), chymout%varid(3)))
+                   chymout%dimid(3), chymout%varid(3)),113)
     call nio_check(nf90_put_att(chymout%ncid, chymout%varid(3),       &
-                   'long_name', 'Time'))
+                   'long_name', 'Time'),114)
     call nio_check(nf90_put_att(chymout%ncid, chymout%varid(3),       &
-                   'units', timeunit))
+                   'units', timeunit),115)
     call nio_check(nf90_put_att(chymout%ncid,chymout%varid(3),        &
-         'calendar',trim(calendario)))
+         'calendar',trim(calendario)),116)
 !
 !-----------------------------------------------------------------------
 !     Define variables 
 !-----------------------------------------------------------------------
 !
       call nio_check(nf90_def_var(chymout%ncid, 'dis', nf90_int,        &
-                     chymout%dimid, chymout%varid(4)))
+                     chymout%dimid, chymout%varid(4)),117)
       call nio_check(nf90_def_var_deflate(chymout%ncid,chymout%varid(4),&
-           1,1,1))
+           1,1,1),118)
       call nio_check(nf90_def_var_chunking(chymout%ncid,                &
-           chymout%varid(4),0, chunksizes))
+           chymout%varid(4),0, chunksizes),119)
       call nio_check(nf90_put_att(chymout%ncid, chymout%varid(4),       &
-                     'long_name', 'River Discharge'))
+                     'long_name', 'River Discharge'),120)
       call nio_check(nf90_put_att(chymout%ncid, chymout%varid(4),       &
-                     'missing_value', 2147483647))
+                     'missing_value', 2147483647),121)
       call nio_check(nf90_put_att(chymout%ncid, chymout%varid(4),       &
-                     'scale_factor', 0.00011641532188114492))
+                     'scale_factor', 0.00011641532188114492),122)
       call nio_check(nf90_put_att(chymout%ncid, chymout%varid(4),       &
-                     'add_offset', 250000))
+                     'add_offset', 250000),123)
 !
 !-----------------------------------------------------------------------
 !     Exit define mode 
 !-----------------------------------------------------------------------
 !
-      call nio_check(nf90_enddef(chymout%ncid))
+      call nio_check(nf90_enddef(chymout%ncid),124)
 !
 !-----------------------------------------------------------------------
 !     Fill coordinate variables 
 !-----------------------------------------------------------------------
 !
-      call nio_check(nf90_put_var(chymout%ncid, chymout%varid(1), lon1))
-      call nio_check(nf90_put_var(chymout%ncid, chymout%varid(2), lat1))
+      call nio_check(nf90_put_var(chymout%ncid, chymout%varid(1), lon1),125)
+      call nio_check(nf90_put_var(chymout%ncid, chymout%varid(2), lat1),126)
 !
 !-----------------------------------------------------------------------
 !     Sync file 
 !-----------------------------------------------------------------------
 !
-      call nio_check(nf90_sync(chymout%ncid))
+      call nio_check(nf90_sync(chymout%ncid),127)
       iostep = 0
    end subroutine createfile
 
@@ -1299,7 +1299,7 @@
       endif
       end subroutine read_rec
 
-      subroutine nio_check(status)
+      subroutine nio_check(status,nerr)
 !
 !-----------------------------------------------------------------------
 !     Used module declarations 
@@ -1314,10 +1314,15 @@
 !-----------------------------------------------------------------------
 !
       integer, intent(in) :: status
+      integer,optional, intent(in) :: nerr
 
       if (status /= nf90_noerr) then
         print*, trim(nf90_strerror(status))
-        print*, "ERRORRRR in NETCDF"
+        if (present(nerr) == .True.) then
+        print*, "ERRORRRR in NETCDF, err Number:",nerr
+        else
+        print*, "ERRORRRR in NETCDF, err Number: undefined"
+        end if
         stop 2
       end if
 !
