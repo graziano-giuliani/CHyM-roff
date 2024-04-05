@@ -180,8 +180,8 @@ if test -z "$COMPILER_GNU_TRUE"; then
   AC_SUBST(FCFLAGS)
 fi
 if test -z "$COMPILER_INTEL_TRUE"; then
-        FCFLAGS="-convert big_endian -assume byterecl \
-                 -heap-arrays -finline-functions"
+  FCFLAGS="-convert big_endian -assume byterecl \
+           -heap-arrays -finline-functions"
   CPRDEF="INTEL"
   AC_SUBST(FCFLAGS)
   LIBS=`echo $LIBS | sed -e 's/-Wl,--as-needed//g'`
@@ -218,6 +218,8 @@ if test -z "$COMPILER_GNU_TRUE"; then
   AC_SUBST(FCFLAGS)
 fi
 if test -z "$COMPILER_INTEL_TRUE"; then
+  #FCFLAGS="-O0 -fpe0 -g -check all -traceback -warn all -ftz \
+  #         -fimf-arch-consistency=true -fltconsistency -mieee-fp $FCFLAGS"
   FCFLAGS="-O2 -fp-model fast=2 -ip $FCFLAGS"
   AC_SUBST(FCFLAGS)
 fi

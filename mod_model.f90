@@ -21,10 +21,10 @@
       data first /.true./
       save first
 
-      integer :: step,imax,imin,jmax,jmin,i,j,idir
+      integer :: imax,imin,jmax,jmin,i,j,idir
       integer,save :: i1,i2,j1,j2
-      real :: rainload,dm
-      
+      real :: rainload,dm,step
+
       if (first) then
          first=.false.
          call mpi_barrier(mycomm,mpierr)
@@ -43,38 +43,35 @@
          jde2,ide1,ide2,jde1gb,jde2gb,ide1gb,ide2gb)
       call exchange_bdy(port_sub(jde1gb:jde2gb,ide1gb:ide2gb),2,jde1,    &
          jde2,ide1,ide2,jde1gb,jde2gb,ide1gb,ide2gb)
-      do i=i1,i2
-        do j=j1,j2
-          idir=fmap(j,i)
-          if (luse(j,i).ne.mare.and.idir.ge.1                           &
-                .and.idir.le.8) then
-            dm=port_sub(j,i)*deltat
-            if (dm.gt.h2o_sub(j,i)) then 
-               dm=h2o_sub(j,i)
+      do i = i1, i2
+        do j = j1, j2
+          idir = fmap(j,i)
+          if (luse(j,i) /= mare .and. idir >= 1 .and. idir <= 8) then
+            dm = port_sub(j,i)*deltat
+            if ( dm > h2o_sub(j,i) ) then
+               dm = h2o_sub(j,i)
             end if
-            wkm1_sub(j,i)=wkm1_sub(j,i)-dm
+            wkm1_sub(j,i) = wkm1_sub(j,i) - dm
             wkm1_sub(j+ir(idir),i+jr(idir))=                            &
-                 wkm1_sub(j+ir(idir),i+jr(idir))+dm
-          endif
-        enddo
-      enddo
-       call exchange_bdy(wkm1_sub(jde1gb:jde2gb,ide1gb:ide2gb),2,jde1,   &
+                 wkm1_sub(j+ir(idir),i+jr(idir)) + dm
+          end if
+        end do
+      end do
+      call exchange_bdy(wkm1_sub(jde1gb:jde2gb,ide1gb:ide2gb),2,jde1,   &
            jde2,ide1,ide2,jde1gb,jde2gb,ide1gb,ide2gb)
-      do i=i1,i2
-        do j=j1,j2
-          idir=fmap(j,i)
-          if (luse(j,i).ne.mare.and.idir.ge.1.and.idir.le.8) then
-             rainload=chym_area(j,i)*1.0e+06*(chym_runoff(j,i))*deltat   !m3 of water recharge in the  grid cell
-             if (rainload.le.-900) then
-             endif
-             if (rainload.gt.200000.0) then
-             endif
-             h2o_sub(j,i)=h2o_sub(j,i)+wkm1_sub(j,i)+rainload
-             bwet_sub(j,i)=h2o_sub(j,i)/chym_dx(j,i)
-             port_sub(j,i)=alfa(j,i)*bwet_sub(j,i)
-          endif
-        enddo
-      enddo
+      do i = i1, i2
+        do j = j1, j2
+          idir = fmap(j,i)
+          if (luse(j,i) /= mare .and. idir >= 1 .and. idir <= 8) then
+             ! m3 of water recharge in the  grid cell
+             rainload = chym_area(j,i)*1.0e+06*(chym_runoff(j,i))*deltat
+             h2o_sub(j,i) = h2o_sub(j,i) + wkm1_sub(j,i) + &
+                            convfac*rainload
+             bwet_sub(j,i) = h2o_sub(j,i) / chym_dx(j,i)
+             port_sub(j,i) = alfa(j,i) * bwet_sub(j,i)
+          end if
+        end do
+      end do
       end subroutine chymmodel
 
       end module mod_model

@@ -3,6 +3,7 @@
       implicit none
 
       real, parameter :: chym_acella = 6307.744**2
+      real :: convfac = 1.0  ! for mm/s, kg/m^2/s. Set to 1/3.6 for m/h
       integer :: iostep , irstep , iqstep, ivar , rvar , qvar
       integer :: nlc,nbc,step,nstep,nlon,nlat
       integer :: inirun,yday,time,oldyear, ical
@@ -23,7 +24,7 @@
       data jr / 1, 1, 1, 0,-1,-1,-1, 0,0/
 
       integer :: pstep
-      integer :: deltat
+      real :: deltat
 
       ! area of the chym grid cells
       real, allocatable :: chym_area(:,:)
@@ -83,7 +84,7 @@
 
 !
 !-----------------------------------------------------------------------
-!     CHyM model netCDF data type 
+!     CHyM model netCDF data type
 !-----------------------------------------------------------------------
 !
       type CHyM_IO

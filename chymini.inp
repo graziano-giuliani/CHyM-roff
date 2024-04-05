@@ -4,6 +4,8 @@ NLON:
 6313
 NLAT:
 5304
+CONVFAC: Unit conversion factor for runoff. Expected kg/m^2/s (mm/s). ERA5 is 1.0/3.6
+1.0
 ISREAD: Read initialization file ( 0 = start from rest, 1 = read model initialization file)
 0
 ISWRIT: time step for writing a restart file (0 = No)
@@ -12,7 +14,7 @@ NDSTEP : Time step of the model (hours)
 24
 NSTEP : Number of time steps (days) the model should run 4749
 1800
-NDTST : Number of steps per hour
+NDTST : Number of model steps per NDSTEP
 300
 NINIRUN : Start timestep of input runoff data. Put 0 to start from first timestep
 0

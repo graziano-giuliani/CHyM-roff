@@ -19,7 +19,7 @@
 !::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
       module mod_iface
- 
+
       use mod_param
       use mod_io
       use mod_model
@@ -43,7 +43,7 @@
       integer :: displacem
       integer :: is,js,ks
       character(len=256) :: namelistfile
-      
+
       call getarg(1, namelistfile)
       call read_config(trim(namelistfile))
 
@@ -89,7 +89,7 @@
         wkm11d=0.
         bwet1d=0.
         h2o1d=0.
-      end if  
+      end if
       call mpi_gather(iyp,1,mpi_integer,                                &
                        iypp,1,mpi_integer,0,mycomm,mpierr)
       call mpi_gather(jxp,1,mpi_integer,                                &
@@ -184,7 +184,7 @@
             jde2gb)
       endif
       call MPI_BARRIER(mycomm,mpierr)
-    
+
       if (myid == 0) then
         time=sdate
         write(tsdate,'(i0.10)') sdate
@@ -203,13 +203,13 @@
         end if
 
       end if
-      do js=1,nbc
-         do is=1,nlc
+      do js=2,nbc-1
+         do is=2,nlc-1
             do ks=1,4
             if (fmap(is,js)==ks .and. fmap(is+ir(ks),js+jr(ks))==ks+4) then
               fmap(is,js) = 0
               fmap(is+ir(ks),js+jr(ks)) = 0
-            end if     
+            end if
             end do
          end do
       end do
@@ -220,20 +220,22 @@
       implicit none
 !
 !-----------------------------------------------------------------------
-!     Imported variable declarations 
+!     Imported variable declarations
 !-----------------------------------------------------------------------
 !
       integer, intent(in) :: istart
       integer, intent(in) :: iend
 !
 !-----------------------------------------------------------------------
-!     Local variable declarations  
+!     Local variable declarations
 !-----------------------------------------------------------------------
 !
 
       integer :: t,i,j, istep, icount
       integer :: iv,k
       character(len=80) :: string, now
+      istep = 0
+      icount = 0
       if ( myid == 0 ) then
         if (isread /= 0 .and. iswrit /= 0) then
           icount = mod(istart, iswrit)
@@ -245,12 +247,12 @@
       do while (time <= edate)
         hourstep = hourstep + dstep
         if (myid == 0 ) then
-          
+
           call createnc1(hourstep)
-          write (string,'(15x,a,i5,a,i10)')                               &
+          write (string,'(15x,a,i8,a,i10)')                               &
               'CHyM integration step number ',&
               hourstep,': ',time
-          write (6,'(a)') string(1:len_trim(string))           
+          write (6,'(a)') string(1:len_trim(string))
           call gmafromindex(time,hour,day,month,year)
           call dataorafromday (hour,day,month,year,now)
         end if
@@ -274,7 +276,7 @@
         end if
       call mpi_bcast(time,nproc,mpi_integer,0,mycomm,mpierr)
 
-      deltat = 86400/step
+      deltat = (3600.0*dstep)/step
       do i=1,step
         wkm1_sub=0.0
         call chymmodel(istep,chym_runoff)
@@ -311,7 +313,7 @@
 !     Write to restart file
 !-----------------------------------------------------------------------
 !
-      if (myid == 0 ) then 
+      if (myid == 0 ) then
       if (iswrit /= 0) then
           call createnc2(hourstep)
       end if
@@ -320,10 +322,10 @@
 !     Write output to file
 !-----------------------------------------------------------------------
 !
-      if (myid == 0 ) then 
+      if (myid == 0 ) then
         port_outs = port
         where(chym_drai < 50) port_outs = 0
-        
+
         port_out=int((port_outs-add_offset)/scale_factor)
         call add_timestep(chymout%ncid,chymout%varid(3),iostep)
         call write_dynvar(chymout%ncid,chymout%varid(4),port_out,      &
@@ -355,42 +357,48 @@
       implicit none
       integer i,j,idir,land,intstep
       real mann,wk(nlc,nbc)
-      real vmax,alfamin,enne,gamma,delta,tresh,hrad
-      alfa=0.0
-      gamma=0.33
-      delta=4.5                                       !cpar(8) in CHyM
-      tresh=100.0                                     !cpar(6) in CHyM
-      alfamin=0.1
-      do j=2,nbc-1
-        do i=2,nlc-1
+      real vmax,alfamin,alfamax,enne,xgamma,delta,tresh,hrad
+      xgamma = 0.33
+      delta = 4.5                                       !cpar(8) in CHyM
+      tresh = 100.0                                     !cpar(6) in CHyM
+      alfamin = 0.1
+      alfamax =  50.0
+      alfa(:,:) = alfamin
+      do j = 2, nbc-1
+        do i = 2, nlc-1
           if (chym_lat(i,j) > 50.50407 .and. chym_lat(i,j) < 51.79574   &
               .and. chym_lon(i,j) > 5.7957 .and. chym_lon(i,j) < 7.5957 &
               .and. luse(i,j) == mare ) then
-              luse(i,j) = lago  
+              luse(i,j) = lago
           end if
-          idir=fmap(i,j) ; land=luse(i,j) ; mann=manning(luse(i,j))
+          idir = fmap(i,j)
+          land = luse(i,j)
+          mann = manning(luse(i,j))
           if (idir.ge.1.and.idir.le.8.and.land.ne.mare.and.land.gt.0)   &
             then
             if (land.gt.lntypes.or.land.le.0) then
               print*,"Error in line: 845   in file: mod_hd_io"
               call exit(0)
             end if
-            chym_dx(i,j)=geodistance(chym_lat(i,j),chym_lon(i,j),       &
+            chym_dx(i,j) = geodistance(chym_lat(i,j),chym_lon(i,j),     &
                  chym_lat(i+ir(idir),j+jr(idir)),                       &
                  chym_lon(i+ir(idir),j+jr(idir)))
-            if (chym_drai(i,j).gt.tresh) then
-               enne=mann/delta
+            if ( chym_drai(i,j) > tresh ) then
+               enne = mann/delta
             else
-               enne=mann/(1+(delta-1)*(1+(chym_drai(i,j)-tresh)/tresh))
+               enne = mann/ &
+                (1.+(delta-1.)*(1.+(chym_drai(i,j)-tresh)/tresh))
             endif
-            hrad=0.0015+0.050*((chym_drai(i,j)*1.e00)**gamma)
             !In CHyM 0.0015 = cpar( 2) ---> Alpha coefficients for
             !hydraulic radius (0.0015)
             !In CHyM 0.050 = cpar( 3) ---> Beta coefficients for
             !hydraulic radius (0.050)
-            alfa(i,j)=((hrad**0.6666*accl(i,j)**0.5)/(enne))
-            if (chym_drai(i,j)>5000 .and. alfa(i,j)>0.5) alfa(i,j) = 0.5
-            if (alfa(i,j).lt.alfamin) alfa(i,j)=alfamin
+            hrad = 0.0015 + 0.050*((chym_drai(i,j)*1.e00)**xgamma)
+            alfa(i,j) = ((hrad**0.6666*accl(i,j)**0.5)/(enne))
+            if ( chym_drai(i,j) > 5000 .and. &
+                 alfa(i,j) > 0.5 ) alfa(i,j) = 0.5
+            if ( alfa(i,j) < alfamin ) alfa(i,j) = alfamin
+            if ( alfa(i,j) > alfamax ) alfa(i,j) = alfamax
           endif
         enddo
       enddo
