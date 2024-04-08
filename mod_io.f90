@@ -1218,7 +1218,9 @@
           print*,"we are opening file: ", trim(filerunoff)
           call nio_check(nf90_open(trim(filerunoff),                     &
              nf90_nowrite, ncid))
-          call nio_check(nf90_inq_varid(ncid, 'mrro', varid))
+          if ( nf90_inq_varid(ncid, 'mrro', varid) /= nf90_noerr ) then
+            call nio_check(nf90_inq_varid(ncid, 'ro',varid))
+          end if
           first = .false.
         end if
       call nio_check(nf90_get_var(ncid, varid, chym_runoff(:,:),        &
