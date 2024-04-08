@@ -244,7 +244,9 @@
         end if
       end if
       hourstep = 0
+
       do while (time <= edate)
+
         hourstep = hourstep + dstep
         if (myid == 0 ) then
 
@@ -263,8 +265,13 @@
         do j=1,nbc
           do i=1,nlc
             chym_runoff(i,j) = chym_runoff(i,j) * 0.001
-            if (chym_runoff(i,j)>1 .or. chym_runoff(i,j)<0 )              &
-                chym_runoff(i,j) = 0
+            if (chym_runoff(i,j) < 0.0 ) then
+              chym_runoff(i,j) = 0.0
+            end if
+            ! Assume this is missing value
+            if ( chym_runoff(i,j) > 1.0 ) then
+              chym_runoff(i,j) = 0.0
+            end if
           enddo
         enddo
         if (myid == 0 ) then
@@ -274,72 +281,74 @@
           call gmafromindex(time,hour,day,month,year)
           call dataorafromday (hour,day,month,year,now)
         end if
-      call mpi_bcast(time,nproc,mpi_integer,0,mycomm,mpierr)
+        call mpi_bcast(time,nproc,mpi_integer,0,mycomm,mpierr)
 
-      deltat = (3600.0*dstep)/step
-      do i=1,step
-        wkm1_sub=0.0
-        call chymmodel(istep,chym_runoff)
-      enddo
-      iv = 1
-      do i=ide1,ide2
-        do j=jde1,jde2
-          portsub1d_n(iv)=port_sub(j,i)
-          h2osub1d_n(iv)=h2o_sub(j,i)
-          iv = iv+1
-        end do
-      end do
-      iv = cartesian_np(myid+1)
-      call mpi_gatherv(portsub1d_n,iv,MPI_REAL,port1d_n,                &
-         cartesian_np, cartesian_dis,                                   &
-         MPI_REAL,0,cartesian_communicator, mpierr)
-      call mpi_gatherv(h2osub1d_n,iv,MPI_REAL,h2o1d_n,                  &
-         cartesian_np, cartesian_dis,                                   &
-         MPI_REAL,0,cartesian_communicator, mpierr)
-      if (myid == 0) then
+        deltat = (3600.0*dstep)/step
+        do i=1,step
+          wkm1_sub=0.0
+          call chymmodel(istep,chym_runoff)
+        enddo
         iv = 1
-        do k=1,nproc
-          do i=ide1p(k),ide2p(k)
-            do j=jde1p(k),jde2p(k)
-              port(j,i) = port1d_n(iv)
-              h2o(j,i) = h2o1d_n(iv)
-              iv = iv + 1
-            end do
+        do i=ide1,ide2
+          do j=jde1,jde2
+            portsub1d_n(iv)=port_sub(j,i)
+            h2osub1d_n(iv)=h2o_sub(j,i)
+            iv = iv+1
           end do
         end do
-      end if
+        iv = cartesian_np(myid+1)
+        call mpi_gatherv(portsub1d_n,iv,MPI_REAL,port1d_n,  &
+                cartesian_np, cartesian_dis,                &
+                MPI_REAL,0,cartesian_communicator, mpierr)
+        call mpi_gatherv(h2osub1d_n,iv,MPI_REAL,h2o1d_n,    &
+                cartesian_np, cartesian_dis,                &
+                MPI_REAL,0,cartesian_communicator, mpierr)
+        if (myid == 0) then
+          iv = 1
+          do k=1,nproc
+            do i=ide1p(k),ide2p(k)
+              do j=jde1p(k),jde2p(k)
+                port(j,i) = port1d_n(iv)
+                h2o(j,i) = h2o1d_n(iv)
+                iv = iv + 1
+              end do
+            end do
+          end do
+        end if
 !
 !-----------------------------------------------------------------------
 !     Write to restart file
 !-----------------------------------------------------------------------
 !
-      if (myid == 0 ) then
-      if (iswrit /= 0) then
-          call createnc2(hourstep)
-      end if
-      end if
+        if (myid == 0 ) then
+          if (iswrit /= 0) then
+            call createnc2(hourstep)
+          end if
+        end if
 !-----------------------------------------------------------------------
 !     Write output to file
 !-----------------------------------------------------------------------
 !
-      if (myid == 0 ) then
-        port_outs = port
-        where(chym_drai < 50) port_outs = 0
+        if (myid == 0 ) then
+          port_outs = port
+          where(chym_drai < 50) port_outs = 0
 
-        port_out=int((port_outs-add_offset)/scale_factor)
-        call add_timestep(chymout%ncid,chymout%varid(3),iostep)
-        call write_dynvar(chymout%ncid,chymout%varid(4),port_out,      &
-             iostep)
-        do j=2,nbc-1
-          do i=2,nlc-1
-            if (port_qmaxs(i,j) < port_outs(i,j)) then
-              port_qmaxs(i,j) = port_outs(i,j)
-            end if
+          port_out=int((port_outs-add_offset)/scale_factor)
+          call add_timestep(chymout%ncid,chymout%varid(3),iostep)
+          call write_dynvar(chymout%ncid,chymout%varid(4),port_out, &
+                            iostep)
+          do j=2,nbc-1
+            do i=2,nlc-1
+              if (port_qmaxs(i,j) < port_outs(i,j)) then
+                port_qmaxs(i,j) = port_outs(i,j)
+              end if
+            end do
           end do
-        end do
           call createnc3(hourstep)
-      end if
-      end do
+        end if
+
+      end do ! edate reached
+
       end subroutine chym_run
 
       subroutine chym_close

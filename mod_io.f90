@@ -1024,20 +1024,28 @@
     character(len=10) :: cfl
     character(len=256) :: mess
     logical :: first
+    logical :: is_197908
     data first /.true./
     save first
     save mm,yy,oldanno
 
     call gmafromindex(time,ora,giorno,mese,anno)
+    is_197908 = ( anno == 1979 .and. mese == 8 .and. &
+                  day == 1 .and. hourstep > 1 )
     if ( first ) then
        read(tsdate(5:6),'(i2)') mm
        read(tsdate(1:4),'(i4)') yy
        oldanno = anno
        first = .false.
     end if
-    if (anno /= oldanno .and. hourstep > 1) then
-      yy = yy + 1
-      write(cfl,'(i4,a)') yy,'010100'
+
+    if ( ( anno /= oldanno .and. hourstep > 1 ) .or. is_197908 ) then
+      if ( is_197908 ) then
+        write(cfl,'(a)') '1979080100'
+      else
+        yy = yy + 1
+        write(cfl,'(i4,a)') yy,'010100'
+      end if
       write (mess,'(15x,a,a)') 'Creating new Restart file:  '// &
          trim(sim_name),'_'//trim(cfl)//'_rst.nc'
       write (6,'(a)') mess(1:len_trim(mess))
