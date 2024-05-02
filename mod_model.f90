@@ -23,7 +23,7 @@
 
       integer :: imax,imin,jmax,jmin,i,j,idir
       integer,save :: i1,i2,j1,j2
-      real :: rainload,dm,step
+      real :: rainload,dm
 
       if (first) then
          first=.false.

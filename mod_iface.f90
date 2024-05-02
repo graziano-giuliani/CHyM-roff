@@ -283,8 +283,8 @@
         end if
         call mpi_bcast(time,nproc,mpi_integer,0,mycomm,mpierr)
 
-        deltat = (3600.0*dstep)/step
-        do i=1,step
+        deltat = (3600.0*dstep)/real(step)
+        do i = 1, step
           wkm1_sub=0.0
           call chymmodel(istep,chym_runoff)
         enddo
@@ -335,7 +335,9 @@
 
           port_out=int((port_outs-add_offset)/scale_factor)
           call add_timestep(chymout%ncid,chymout%varid(3),iostep)
-          call write_dynvar(chymout%ncid,chymout%varid(4),port_out, &
+          !call write_dynvar(chymout%ncid,chymout%varid(4),port_out, &
+          !                  iostep)
+          call write_dynvar(chymout%ncid,chymout%varid(4),port_outs, &
                             iostep)
           do j=2,nbc-1
             do i=2,nlc-1

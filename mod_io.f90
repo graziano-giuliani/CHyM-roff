@@ -429,7 +429,9 @@
 !     Define variables
 !-----------------------------------------------------------------------
 !
-      call nio_check(nf90_def_var(chymout%ncid, 'dis', nf90_int,        &
+      !call nio_check(nf90_def_var(chymout%ncid, 'dis', nf90_int,       &
+      !               chymout%dimid, chymout%varid(4)),117)
+      call nio_check(nf90_def_var(chymout%ncid, 'dis', nf90_float,      &
                      chymout%dimid, chymout%varid(4)),117)
       call nio_check(nf90_def_var_deflate(chymout%ncid,chymout%varid(4),&
            1,1,1),118)
@@ -438,11 +440,13 @@
       call nio_check(nf90_put_att(chymout%ncid, chymout%varid(4),       &
                      'long_name', 'River Discharge'),120)
       call nio_check(nf90_put_att(chymout%ncid, chymout%varid(4),       &
-                     'missing_value', 2147483647),121)
-      call nio_check(nf90_put_att(chymout%ncid, chymout%varid(4),       &
-                     'scale_factor', 0.00011641532188114492),122)
-      call nio_check(nf90_put_att(chymout%ncid, chymout%varid(4),       &
-                     'add_offset', 250000),123)
+                     'missing_value', 1.0e+36),121)
+      !call nio_check(nf90_put_att(chymout%ncid, chymout%varid(4),       &
+      !               'missing_value', 2147483647),121)
+      !call nio_check(nf90_put_att(chymout%ncid, chymout%varid(4),       &
+      !               'scale_factor', 0.00011641532188114492),122)
+      !call nio_check(nf90_put_att(chymout%ncid, chymout%varid(4),       &
+      !               'add_offset', 250000),123)
 !
 !-----------------------------------------------------------------------
 !     Exit define mode
@@ -540,7 +544,9 @@
 !     Define variables
 !-----------------------------------------------------------------------
 !
-      call nio_check(nf90_def_var(chymout%ncid, 'dis', nf90_int,        &
+      !call nio_check(nf90_def_var(chymout%ncid, 'dis', nf90_int,       &
+      !               chymout%dimid, chymout%varid(4)))
+      call nio_check(nf90_def_var(chymout%ncid, 'dis', nf90_float,      &
                      chymout%dimid, chymout%varid(4)))
       call nio_check(nf90_def_var_deflate(chymout%ncid,chymout%varid(4),&
            1,1,1))
@@ -549,11 +555,13 @@
       call nio_check(nf90_put_att(chymout%ncid, chymout%varid(4),       &
                      'long_name', 'River Discharge'))
       call nio_check(nf90_put_att(chymout%ncid, chymout%varid(4),       &
-                     'missing_value', 2147483647))
-      call nio_check(nf90_put_att(chymout%ncid, chymout%varid(4),       &
-                     'scale_factor', 0.00011641532188114492))
-      call nio_check(nf90_put_att(chymout%ncid, chymout%varid(4),       &
-                     'add_offset', 250000))
+                     'missing_value', 1.0e+36))
+      !call nio_check(nf90_put_att(chymout%ncid, chymout%varid(4),       &
+      !               'missing_value', 2147483647))
+      !call nio_check(nf90_put_att(chymout%ncid, chymout%varid(4),       &
+      !               'scale_factor', 0.00011641532188114492))
+      !call nio_check(nf90_put_att(chymout%ncid, chymout%varid(4),       &
+      !               'add_offset', 250000))
 !
 !-----------------------------------------------------------------------
 !     Exit define mode
@@ -1024,14 +1032,11 @@
     character(len=10) :: cfl
     character(len=256) :: mess
     logical :: first
-    logical :: is_197908
     data first /.true./
     save first
     save mm,yy,oldanno
 
     call gmafromindex(time,ora,giorno,mese,anno)
-    is_197908 = ( anno == 1979 .and. mese == 8 .and. &
-                  day == 1 .and. hourstep > 1 )
     if ( first ) then
        read(tsdate(5:6),'(i2)') mm
        read(tsdate(1:4),'(i4)') yy
@@ -1039,13 +1044,9 @@
        first = .false.
     end if
 
-    if ( ( anno /= oldanno .and. hourstep > 1 ) .or. is_197908 ) then
-      if ( is_197908 ) then
-        write(cfl,'(a)') '1979080100'
-      else
-        yy = yy + 1
-        write(cfl,'(i4,a)') yy,'010100'
-      end if
+    if ( anno /= oldanno .and. hourstep > 1 ) then
+      yy = yy + 1
+      write(cfl,'(i4,a)') yy,'010100'
       write (mess,'(15x,a,a)') 'Creating new Restart file:  '// &
          trim(sim_name),'_'//trim(cfl)//'_rst.nc'
       write (6,'(a)') mess(1:len_trim(mess))
