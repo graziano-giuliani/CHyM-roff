@@ -79,13 +79,13 @@
       call read_rec(ifile, 'ISWRIT', fdum, pname)
       iswrit = int(fdum+0.001)
       call read_rec(ifile, 'TSDATE', fdum, tdate)
-      read(tdate(1:4),'(i)') jahr1
-      read(tdate(5:6),'(i)') jahr2
-      read(tdate(7:8),'(i)') jahr3
-      read(tdate(9:10),'(i)') jahr4
-      read(tdate(1:10),'(i)') sdate
+      read(tdate(1:4),*) jahr1
+      read(tdate(5:6),*) jahr2
+      read(tdate(7:8),*) jahr3
+      read(tdate(9:10),*) jahr4
+      read(tdate(1:10),*) sdate
       call read_rec(ifile, 'TEDATE', fdum, tdate)
-      read(tdate(1:10),'(i)') edate
+      read(tdate(1:10),*) edate
       call read_rec(ifile, 'NDSTEP', fdum, pname)
       dstep = int(fdum+0.001)
       call read_rec(ifile, 'NSTEP', fdum, pname)
@@ -1213,14 +1213,14 @@
       character(len=256) filerunoff
       if (myid == 0) then
       stepr = step - stepminus
-        if (first == .false. .and. year == oldyear + 1) then
+        if (.not. first .and. year == oldyear + 1) then
            call nio_check(nf90_close(ncid))
            first = .true.
            stepminus = step-1
            stepr = step - stepminus
         end if
         print*,"We are going to read step : ",stepr," of chym_runoff"
-        if (first == .true.) then
+        if (first) then
           oldyear=year
           write(filerunoff,'(a,i4,a)') trim(filemrro)//'_',oldyear, &
               '.nc'
@@ -1429,7 +1429,7 @@
 
       if (status /= nf90_noerr) then
         print*, trim(nf90_strerror(status))
-        if (present(nerr) == .True.) then
+        if (present(nerr)) then
         print*, "ERRORRRR in NETCDF, err Number:",nerr
         else
         print*, "ERRORRRR in NETCDF, err Number: undefined"

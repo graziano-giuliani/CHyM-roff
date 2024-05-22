@@ -384,7 +384,7 @@
           end if
           idir = fmap(i,j)
           land = luse(i,j)
-          mann = manning(luse(i,j))
+          mann = manning(int(luse(i,j)))
           if (idir.ge.1.and.idir.le.8.and.land.ne.mare.and.land.gt.0)   &
             then
             if (land.gt.lntypes.or.land.le.0) then
