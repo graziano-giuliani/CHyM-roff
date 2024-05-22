@@ -84,7 +84,7 @@
       call mpi_reduce(nngb, nngbp, 1, mpi_integer, mpi_sum, 0, mycomm,  &
         mpierr)
       if (myid  == 0) then
-        allocate(port1d(nngbp),bwet1d(nngbp),h2o1d(nngbp))
+        allocate(port1d(nngbp),bwet1d(nngbp),h2o1d(nngbp),wkm11d(nngbp))
         port1d=0.
         wkm11d=0.
         bwet1d=0.
