@@ -281,4 +281,5 @@ AC_SUBST(SYSLIBS)
 
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([preproc/Makefile])
 AC_OUTPUT

@@ -17,12 +17,13 @@
 #
 #::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+SUBDIRS = preproc
+
 if CHYM_PARALLEL
 rcsuffix = MPI
 else
 rcsuffix = Serial
 endif
-
 
 ## FCFLAGS += -I. `nf-config --fflags`
 FCFLAGS += -I. $(NC_INCLUDES)
