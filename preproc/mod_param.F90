@@ -3,8 +3,7 @@
 !    This file is part of ICTP CHyM.
 !
 !    ICTP CHyM is free software: you can redistribute it and/or modify
-!    it under the terms of the GNU General Public License as published
-!    by
+!    it under the terms of the GNU General Public License as published by
 !    the Free Software Foundation, either version 3 of the License, or
 !    (at your option) any later version.
 !
@@ -17,27 +16,19 @@
 !    along with ICTP CHyM.  If not, see <http://www.gnu.org/licenses/>.
 !
 !::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+module mod_param
 
-program main
+  use, intrinsic :: iso_fortran_env
+  use mod_common
+  use mod_ncio
 
-  use mod_iface
-  use mod_param, only : pstep, nstep
-  use mod_mpimess
-  use mod_varandtypes
+  contains
 
-  implicit none
+  subroutine setparam
+    implicit none
+    write (output_unit,'(/5x,a)') 'Acquiring parameters .....'
+    call read_namelist
+    write (6,'(12x,a/)') 'Done.'
+  end subroutine setparam
 
-  integer :: ios, istep
-  integer :: i1,j1
-
-  call mpi_init(mpierr)
-  call mpi_comm_dup(mpi_comm_world,mycomm,mpierr)
-  call mpi_comm_size(mycomm, nproc, mpierr)
-  call mpi_comm_rank(mycomm, myid, mpierr)
-  call chym_init()
-  pstep = 1
-  call chym_run(pstep, nstep)
-  call chym_close
-
-end program main
-
+end module mod_param

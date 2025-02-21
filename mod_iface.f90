@@ -18,25 +18,25 @@
 !
 !::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-      module mod_iface
+module mod_iface
 
-      use mod_param
-      use mod_io
-      use mod_model
-      use mod_mpimess
-      use mod_varandtypes
-      use mod_time
+  use mod_param
+  use mod_io
+  use mod_model
+  use mod_mpimess
+  use mod_varandtypes
+  use mod_time
 
-      implicit none
-      private
+  implicit none
+  private
 
-      public chym_init
-      public chym_run
-      public chym_close
+  public chym_init
+  public chym_run
+  public chym_close
 
-      contains
+  contains
 
-      subroutine chym_init()
+    subroutine chym_init()
       implicit none
       integer :: i1,j1
       integer :: i,j
@@ -213,10 +213,10 @@
             end do
          end do
       end do
-      end subroutine chym_init
+    end subroutine chym_init
 
 
-      subroutine chym_run(istart, iend)
+    subroutine chym_run(istart, iend)
       implicit none
 !
 !-----------------------------------------------------------------------
@@ -351,9 +351,9 @@
 
       end do ! edate reached
 
-      end subroutine chym_run
+    end subroutine chym_run
 
-      subroutine chym_close
+    subroutine chym_close
         implicit none
         if (myid == 0) then
           write (6,'(/12x,a)') 'Closing all files'
@@ -362,9 +362,9 @@
         end if
         call mpi_barrier(mycomm,mpierr)
         call mpi_finalize(mpierr)
-      end subroutine
+    end subroutine
 
-      subroutine runoffspeed
+    subroutine runoffspeed
       implicit none
       integer i,j,idir,land,intstep
       real mann,wk(nlc,nbc)
@@ -413,9 +413,9 @@
           endif
         enddo
       enddo
-      end subroutine runoffspeed
+    end subroutine runoffspeed
 !
-      real function geodistance(latt1,lonn1,latt2,lonn2)
+    real function geodistance(latt1,lonn1,latt2,lonn2)
       implicit none
       real rad,dpi ; parameter(rad=6371000.0,dpi=6.2831855)
       real latt1,lonn1,latt2,lonn2,lt1,lt2,ln1,ln2,x,y
@@ -432,6 +432,6 @@
       endif
       if (geodistance.lt.0.1) geodistance=0.1
       return
-      end function geodistance
+    end function geodistance
 
-      end module mod_iface
+end module mod_iface

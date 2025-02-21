@@ -306,6 +306,4 @@ module mod_time
     end if
   end function i4digityear
 
-
 end module mod_time
-

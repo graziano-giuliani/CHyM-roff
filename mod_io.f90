@@ -143,8 +143,6 @@
       if (.not. allocated(wkm1)) allocate(wkm1(nlc,nbc))
       if (.not. allocated(bwet)) allocate(bwet(nlc,nbc))
       if (.not. allocated(h2o)) allocate(h2o(nlc,nbc))
-      if (.not. allocated(lat1)) allocate(lat1(nbc))
-      if (.not. allocated(lon1)) allocate(lon1(nlc))
       if (.not. allocated(accl)) allocate(accl(nlc,nbc))
       if (.not. allocated(luse)) allocate(luse(nlc,nbc))
       if (.not. allocated(port)) allocate(port(nlc,nbc))
@@ -285,10 +283,10 @@
       call nio_check(nf90_open(trim(filestatic),                        &
          nf90_nowrite, ncid),1)
       call nio_check(nf90_inq_varid(ncid, 'lon', varid),2)
-      call nio_check(nf90_get_var(ncid, varid, lon1(:)),3)
+      call nio_check(nf90_get_var(ncid, varid, chym_lon(:,:)),3)
 
       call nio_check(nf90_inq_varid(ncid, 'lat', varid),4)
-      call nio_check(nf90_get_var(ncid, varid, lat1(:)),5)
+      call nio_check(nf90_get_var(ncid, varid, chym_lat(:,:)),5)
 
       call nio_check(nf90_inq_varid(ncid, 'fdm', varid),6)
       call nio_check(nf90_get_var(ncid, varid, fmap(:,:)),7)
@@ -309,8 +307,8 @@
 
       end if
 
-      call mpi_bcast(lon1(1),nlc,MPI_REAL, 0,mycomm,mpierr)
-      call mpi_bcast(lat1(1),nbc,MPI_REAL, 0,mycomm,mpierr)
+      call mpi_bcast(chym_lon(1,1),nbc*nlc,MPI_REAL, 0,mycomm,mpierr)
+      call mpi_bcast(chym_lat(1,1),nbc*nlc,MPI_REAL, 0,mycomm,mpierr)
       call mpi_bcast(fmap(1,1),nbc*nlc,MPI_REAL, 0,mycomm,mpierr)
       call mpi_bcast(accl(1,1),nbc*nlc,MPI_REAL, 0,mycomm,mpierr)
       call mpi_bcast(luse(1,1),nbc*nlc,MPI_REAL, 0,mycomm,mpierr)
@@ -318,12 +316,6 @@
       call mpi_bcast(chym_drai(1,1),nbc*nlc,MPI_REAL, 0,mycomm,mpierr)
       call mpi_barrier(mycomm,mpierr)
 
-      do i=1,nlc
-        chym_lat(i,:) = lat1
-      enddo
-      do i=1,nbc
-        chym_lon(:,i) = lon1
-      enddo
       end subroutine read_init
 
 
@@ -368,14 +360,14 @@
 !-----------------------------------------------------------------------
 !
     call nio_check(nf90_def_var(chymout%ncid, 'lon', nf90_real,       &
-                   chymout%dimid(1), chymout%varid(1)),104)
+                   chymout%dimid(1:2), chymout%varid(1)),104)
     call nio_check(nf90_put_att(chymout%ncid, chymout%varid(1),       &
                    'long_name', 'Longitude'),105)
     call nio_check(nf90_put_att(chymout%ncid, chymout%varid(1),       &
                    'units', 'degrees_east'),106)
 !
     call nio_check(nf90_def_var(chymout%ncid, 'lat', nf90_real,       &
-                   chymout%dimid(2), chymout%varid(2)),107)
+                   chymout%dimid(1:2), chymout%varid(2)),107)
     call nio_check(nf90_put_att(chymout%ncid, chymout%varid(2),       &
                    'long_name', 'Latitude'),108)
     call nio_check(nf90_put_att(chymout%ncid, chymout%varid(2),       &
@@ -441,6 +433,8 @@
                      'long_name', 'River Discharge'),120)
       call nio_check(nf90_put_att(chymout%ncid, chymout%varid(4),       &
                      'missing_value', 1.0e+36),121)
+      call nio_check(nf90_put_att(chymout%ncid, chymout%varid(4),       &
+                     'coordinates', "lat lon"))
       !call nio_check(nf90_put_att(chymout%ncid, chymout%varid(4),       &
       !               'missing_value', 2147483647),121)
       !call nio_check(nf90_put_att(chymout%ncid, chymout%varid(4),       &
@@ -458,8 +452,8 @@
 !     Fill coordinate variables
 !-----------------------------------------------------------------------
 !
-      call nio_check(nf90_put_var(chymout%ncid, chymout%varid(1), lon1),125)
-      call nio_check(nf90_put_var(chymout%ncid, chymout%varid(2), lat1),126)
+      call nio_check(nf90_put_var(chymout%ncid, chymout%varid(1), chym_lon),125)
+      call nio_check(nf90_put_var(chymout%ncid, chymout%varid(2), chym_lat),126)
 !
 !-----------------------------------------------------------------------
 !     Sync file
@@ -516,14 +510,14 @@
 !-----------------------------------------------------------------------
 !
       call nio_check(nf90_def_var(chymout%ncid, 'lon', nf90_real,       &
-                     chymout%dimid(1), chymout%varid(1)))
+                     chymout%dimid(1:2), chymout%varid(1)))
       call nio_check(nf90_put_att(chymout%ncid, chymout%varid(1),       &
                      'long_name', 'Longitude'))
       call nio_check(nf90_put_att(chymout%ncid, chymout%varid(1),       &
                      'units', 'degrees_east'))
 !
       call nio_check(nf90_def_var(chymout%ncid, 'lat', nf90_real,       &
-                     chymout%dimid(2), chymout%varid(2)))
+                     chymout%dimid(1:2), chymout%varid(2)))
       call nio_check(nf90_put_att(chymout%ncid, chymout%varid(2),       &
                      'long_name', 'Latitude'))
       call nio_check(nf90_put_att(chymout%ncid, chymout%varid(2),       &
@@ -556,6 +550,8 @@
                      'long_name', 'River Discharge'))
       call nio_check(nf90_put_att(chymout%ncid, chymout%varid(4),       &
                      'missing_value', 1.0e+36))
+      call nio_check(nf90_put_att(chymout%ncid, chymout%varid(4),       &
+                     'coordinates', "lat lon"))
       !call nio_check(nf90_put_att(chymout%ncid, chymout%varid(4),       &
       !               'missing_value', 2147483647))
       !call nio_check(nf90_put_att(chymout%ncid, chymout%varid(4),       &
@@ -573,8 +569,8 @@
 !     Fill coordinate variables
 !-----------------------------------------------------------------------
 !
-      call nio_check(nf90_put_var(chymout%ncid, chymout%varid(1), lon1))
-      call nio_check(nf90_put_var(chymout%ncid, chymout%varid(2), lat1))
+      call nio_check(nf90_put_var(chymout%ncid, chymout%varid(1), chym_lon))
+      call nio_check(nf90_put_var(chymout%ncid, chymout%varid(2), chym_lat))
 !
 !-----------------------------------------------------------------------
 !     Sync file
@@ -629,14 +625,14 @@
 !-----------------------------------------------------------------------
 !
       call nio_check(nf90_def_var(chymqmax%ncid, 'lon', nf90_real,       &
-                     chymqmax%dimid(1), chymqmax%varid(1)))
+                     chymqmax%dimid(1:2), chymqmax%varid(1)))
       call nio_check(nf90_put_att(chymqmax%ncid, chymqmax%varid(1),       &
                      'long_name', 'Longitude'))
       call nio_check(nf90_put_att(chymqmax%ncid, chymqmax%varid(1),       &
                      'units', 'degrees_east'))
 !
       call nio_check(nf90_def_var(chymqmax%ncid, 'lat', nf90_real,       &
-                     chymqmax%dimid(2), chymqmax%varid(2)))
+                     chymqmax%dimid(1:2), chymqmax%varid(2)))
       call nio_check(nf90_put_att(chymqmax%ncid, chymqmax%varid(2),       &
                      'long_name', 'Latitude'))
       call nio_check(nf90_put_att(chymqmax%ncid, chymqmax%varid(2),       &
@@ -663,10 +659,12 @@
            1,1,1))
       call nio_check(nf90_def_var_chunking(chymqmax%ncid,                &
            chymqmax%varid(4),0, chunksizes))
-      call nio_check(nf90_put_att(chymqmax%ncid, chymqmax%varid(4),       &
+      call nio_check(nf90_put_att(chymqmax%ncid, chymqmax%varid(4),      &
                      'long_name', 'River Qmax'))
-      call nio_check(nf90_put_att(chymqmax%ncid, chymqmax%varid(4),       &
+      call nio_check(nf90_put_att(chymqmax%ncid, chymqmax%varid(4),      &
                      'missing_value', 1.0e20))
+      call nio_check(nf90_put_att(chymqmax%ncid, chymqmax%varid(4),      &
+                     'coordinates', "lat lon"))
 !
 !-----------------------------------------------------------------------
 !     Exit define mode
@@ -678,8 +676,8 @@
 !     Fill coordinate variables
 !-----------------------------------------------------------------------
 !
-      call nio_check(nf90_put_var(chymqmax%ncid, chymqmax%varid(1), lon1))
-      call nio_check(nf90_put_var(chymqmax%ncid, chymqmax%varid(2), lat1))
+      call nio_check(nf90_put_var(chymqmax%ncid, chymqmax%varid(1), chym_lon))
+      call nio_check(nf90_put_var(chymqmax%ncid, chymqmax%varid(2), chym_lat))
 !
 !-----------------------------------------------------------------------
 !     Sync file
@@ -772,14 +770,14 @@
 !-----------------------------------------------------------------------
 !
       call nio_check(nf90_def_var(chymqmax%ncid, 'lon', nf90_real, &
-                     chymqmax%dimid(1), chymqmax%varid(1)))
+                     chymqmax%dimid(1:2), chymqmax%varid(1)))
       call nio_check(nf90_put_att(chymqmax%ncid, chymqmax%varid(1), &
                      'long_name', 'Longitude'))
       call nio_check(nf90_put_att(chymqmax%ncid, chymqmax%varid(1), &
                      'units', 'degrees_east'))
 !
       call nio_check(nf90_def_var(chymqmax%ncid, 'lat', nf90_real, &
-                     chymqmax%dimid(2), chymqmax%varid(2)))
+                     chymqmax%dimid(1:2), chymqmax%varid(2)))
       call nio_check(nf90_put_att(chymqmax%ncid, chymqmax%varid(2), &
                      'long_name', 'Latitude'))
       call nio_check(nf90_put_att(chymqmax%ncid, chymqmax%varid(2), &
@@ -809,6 +807,8 @@
                      'long_name', 'River Qmax'))
       call nio_check(nf90_put_att(chymqmax%ncid, chymqmax%varid(4), &
                      'missing_value', 1.0e20))
+      call nio_check(nf90_put_att(chymqmax%ncid, chymqmax%varid(4), &
+                     'coordinates', "lat lon"))
 !
 !-----------------------------------------------------------------------
 !     Exit define mode
@@ -820,8 +820,8 @@
 !     Fill coordinate variables
 !-----------------------------------------------------------------------
 !
-      call nio_check(nf90_put_var(chymqmax%ncid, chymqmax%varid(1), lon1))
-      call nio_check(nf90_put_var(chymqmax%ncid, chymqmax%varid(2), lat1))
+      call nio_check(nf90_put_var(chymqmax%ncid, chymqmax%varid(1), chym_lon))
+      call nio_check(nf90_put_var(chymqmax%ncid, chymqmax%varid(2), chym_lat))
 !
 !-----------------------------------------------------------------------
 !     Sync file
@@ -915,14 +915,14 @@
 !-----------------------------------------------------------------------
 !
       call nio_check(nf90_def_var(chymrst%ncid, 'lon', nf90_real, &
-                     chymrst%dimid(1), chymrst%varid(1)))
+                     chymrst%dimid(1:2), chymrst%varid(1)))
       call nio_check(nf90_put_att(chymrst%ncid, chymrst%varid(1), &
                      'long_name', 'Longitude'))
       call nio_check(nf90_put_att(chymrst%ncid, chymrst%varid(1), &
                      'units', 'degrees_east'))
 !
       call nio_check(nf90_def_var(chymrst%ncid, 'lat', nf90_real, &
-                     chymrst%dimid(2), chymrst%varid(2)))
+                     chymrst%dimid(1:2), chymrst%varid(2)))
       call nio_check(nf90_put_att(chymrst%ncid, chymrst%varid(2), &
                      'long_name', 'Latitude'))
       call nio_check(nf90_put_att(chymrst%ncid, chymrst%varid(2), &
@@ -952,6 +952,8 @@
                      'long_name', 'River Discharge'))
       call nio_check(nf90_put_att(chymrst%ncid, chymrst%varid(4), &
                      'missing_value', 1.0e20))
+      call nio_check(nf90_put_att(chymrst%ncid, chymrst%varid(4),       &
+                     'coordinates', "lat lon"))
       call nio_check(nf90_def_var(chymrst%ncid, 'h2o', nf90_real, &
                      chymrst%dimid, chymrst%varid(5)))
       call nio_check(nf90_def_var_deflate(chymrst%ncid,chymrst%varid(5),&
@@ -962,6 +964,8 @@
                      'long_name', 'Total water'))
       call nio_check(nf90_put_att(chymrst%ncid, chymrst%varid(5), &
                      'missing_value', 1.0e20))
+      call nio_check(nf90_put_att(chymrst%ncid, chymrst%varid(5),       &
+                     'coordinates', "lat lon"))
 !
 !-----------------------------------------------------------------------
 !     Exit define mode
@@ -973,8 +977,8 @@
 !     Fill coordinate variables
 !-----------------------------------------------------------------------
 !
-      call nio_check(nf90_put_var(chymrst%ncid, chymrst%varid(1), lon1))
-      call nio_check(nf90_put_var(chymrst%ncid, chymrst%varid(2), lat1))
+      call nio_check(nf90_put_var(chymrst%ncid, chymrst%varid(1), chym_lon))
+      call nio_check(nf90_put_var(chymrst%ncid, chymrst%varid(2), chym_lat))
 !
 !-----------------------------------------------------------------------
 !     Sync file
@@ -983,7 +987,8 @@
       call nio_check(nf90_sync(chymrst%ncid))
 !
       irstep = 0
-      end subroutine createfile_rst
+  end subroutine createfile_rst
+
   subroutine createnc1(hourstep)
     implicit none
     integer ora,giorno,mese,anno,yy,mm

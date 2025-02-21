@@ -1,17 +1,17 @@
-      module mod_model
+module mod_model
 
-      use mod_param
-      use mod_mpimess
-      use mod_varandtypes
+  use mod_param
+  use mod_mpimess
+  use mod_varandtypes
 
-      implicit none
-      private
+  implicit none
+  private
 
-      public :: chymmodel
+  public :: chymmodel
 
-      contains
+  contains
 
-      subroutine chymmodel(istep, chym_runoff)
+    subroutine chymmodel(istep, chym_runoff)
 
       implicit none
 
@@ -72,6 +72,6 @@
           end if
         end do
       end do
-      end subroutine chymmodel
+    end subroutine chymmodel
 
-      end module mod_model
+end module mod_model
