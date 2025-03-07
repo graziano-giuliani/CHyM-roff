@@ -48,6 +48,7 @@ module mod_common
   real, dimension(:,:) , allocatable, public :: lon
   real, dimension(:,:) , allocatable, public :: area
   real, dimension(:,:) , allocatable, public :: dem
+  integer, dimension(:,:) , allocatable, public :: network
   integer, dimension(:,:) , allocatable, public :: luc
   integer, dimension(:,:) , allocatable, public :: mask
 
@@ -65,6 +66,7 @@ module mod_common
   character(len=512) , public :: demfile
   character(len=512) , public :: landfile
   character(len=512) , public :: maskfile
+  character(len=512) , public :: riverfile = "none"
   character(len=512) , public :: outfile
 
   ! Return flow factor
@@ -104,7 +106,8 @@ module mod_common
     integer :: iretval
     character(len=512) :: namelistfile
 
-    namelist /chymconfig/ gridfile, demfile, landfile, maskfile, outfile
+    namelist /chymconfig/ gridfile, demfile, landfile, &
+                          maskfile, riverfile, outfile
     namelist /chymparam/ cpar1, cpar2, cpar3, cpar4, cpar5, &
                          cpar6, cpar7, cpar8, cpar9, &
                          ncyc1, ncyc2, ncyc3, &
@@ -166,6 +169,7 @@ module mod_common
     allocate(dem(nlon,nlat))
     allocate(luc(nlon,nlat))
     allocate(mask(nlon,nlat))
+    allocate(network(nlon,nlat))
 
     allocate(dx(nlon,nlat))
     allocate(noflow(nlon,nlat))
@@ -184,6 +188,7 @@ module mod_common
     deallocate(dem)
     deallocate(luc)
     deallocate(mask)
+    deallocate(network)
 
     deallocate(dx)
     deallocate(noflow)

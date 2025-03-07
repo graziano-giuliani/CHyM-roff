@@ -137,6 +137,44 @@ AC_DEFUN([RR_PATH_NETCDF_F90],[
   AC_SUBST([AM_CPPFLAGS])
 ])
 
+AC_DEFUN([RR_PATH_FORTRANGIS],[
+
+  AC_CHECKING([for Fortran GIS])
+
+  save_CPPFLAGS="$CPPFLAGS"
+  save_LDFLAGS="$LDFLAGS"
+
+  CPPFLAGS="$CPPFLAGS $FGIS_INCLUDES"
+  AMDEPFLAGS="$AMDEPFLAGS $FGIS_INCLUDES"
+  LIBS="$LIBS -lfortrangis"
+  LDFLAGS="$LDFLAGS $FGIS_LDFLAGS"
+
+  AC_SUBST([AMDEPFLAGS])
+
+  for flag in "-I" "-M" "-p"; do
+    FCFLAGS="$flag$NC_PREFIX/include $save_FCFLAGS"
+    AC_COMPILE_IFELSE(
+      [AC_LANG_PROGRAM([[ ]],
+                       [[      use shapelib]])],
+                       [fgis=yes; FGIS=$flag],
+                       [fgis=no])
+    if test "x$fgis" = xyes; then
+      break
+    fi
+  done
+
+  if test "x$fgis" = xno; then
+    AC_MSG_ERROR([Fortran GIS module not found])
+  fi
+
+  FCFLAGS="$save_FCFLAGS"
+  LDFLAGS="$save_LDFLAGS"
+  AM_CPPFLAGS="$FGIS_INCLUDES $AM_CPPFLAGS"
+  AM_LDFLAGS="$FGIS_LDFLAGS $AM_LDFLAGS"
+  AC_SUBST([AM_CPPFLAGS])
+  AC_SUBST([AM_LDFLAGS])
+])
+
 dnl @synopsis ACX_MPI([ACTION-IF-FOUND[, ACTION-IF-NOT-FOUND]])
 dnl
 dnl @summary figure out how to compile/link code with MPI

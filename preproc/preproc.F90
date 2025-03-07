@@ -22,6 +22,7 @@ program preproc
   use mod_param
   use mod_crtstat
   use mod_ncio
+  use mod_rivernet
 
   implicit none
 
@@ -56,6 +57,14 @@ program preproc
   call ncfromfile(demfile,'dem',dem)
   call ncfromfile(landfile,'luc',luc)
   call ncfromfile(maskfile,'mask',mask)
+
+  if ( riverfile /= "none" ) then
+    call ncfromfile(riverfile,'network',network)
+    call carve_rivernet( )
+  end if
+
+  call applymask( )
+
   write(output_unit, '(7x,a)') 'Done.'
 
   call buildflowdirmap( )
@@ -68,15 +77,12 @@ program preproc
   outf%fcomment = 'None'
   outf%nx = nlon
   outf%ny = nlat
+  outf%lntypes = lntypes
   call create_outfile(outf)
   call outfile_attribute(outf,'minimum_latitude',minlat)
   call outfile_attribute(outf,'maximum_latitude',maxlat)
   call outfile_attribute(outf,'minimum_longitude',minlon)
   call outfile_attribute(outf,'maximum_longitude',maxlon)
-
-  call write_variable(outf,latid,lat)
-  call write_variable(outf,lonid,lon)
-  call write_variable(outf,areaid,area)
 
   call add_variable(outf,demid)
   call add_variable(outf,lucid)
@@ -85,6 +91,13 @@ program preproc
   call add_variable(outf,draid)
   call add_variable(outf,runid)
   call add_variable(outf,alfid)
+
+  call set_writemod(outf,manning)
+
+  call write_variable(outf,latid,lat)
+  call write_variable(outf,lonid,lon)
+  call write_variable(outf,areaid,area)
+
   call write_variable(outf,demid,dem)
   call write_variable(outf,lucid,luc)
   call write_variable(outf,fdmid,fmap)

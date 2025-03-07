@@ -105,6 +105,7 @@ esac
 
 RR_PATH_NETCDF
 RR_PATH_NETCDF_F90
+# RR_PATH_FORTRANGIS
 
 test "$osname"=NONE && osname=`uname -s`
 OSNAME=$osname
@@ -174,7 +175,8 @@ AM_CONDITIONAL(CHYM_PARALLEL, [ test x"$PARALLEL" = "x1"])
 
 # Force Big endian I/O for known compilers
 if test -z "$COMPILER_GNU_TRUE"; then
-#for debugging  FCFLAGS="-fconvert=big-endian -fno-range-check -finline-functions -g -fcheck=all -Wall"
+#for debugging
+  #FCFLAGS="-fconvert=big-endian -fno-range-check -finline-functions -g -O0 -fcheck=all -Wall -fbacktrace"
   FCFLAGS="-fconvert=big-endian -fno-range-check -finline-functions "
   CPRDEF="GNU"
   AC_SUBST(FCFLAGS)

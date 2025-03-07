@@ -3,6 +3,7 @@
  demfile = 'demfile.nc'
  landfile = 'landfile.nc'
  maskfile = 'maskfile.nc'
+ riverfile = 'none',
  outfile = 'chym_stk.nc'
 /
 

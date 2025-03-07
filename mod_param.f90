@@ -29,9 +29,9 @@ module mod_param
   ! area of the chym grid cells
   real, allocatable :: chym_area(:,:)
   real, allocatable :: alfa(:,:)
-  real, allocatable :: fmap(:,:)
+  integer, allocatable :: fmap(:,:)
   real, allocatable :: accl(:,:)
-  real, allocatable :: luse(:,:)
+  integer, allocatable :: luse(:,:)
   real, allocatable :: port_sub(:,:)
   real, allocatable :: h2o_sub(:,:)
   real, allocatable :: bwet_sub(:,:)

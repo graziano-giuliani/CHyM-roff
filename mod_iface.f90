@@ -38,16 +38,17 @@ module mod_iface
 
     subroutine chym_init()
       implicit none
-      integer :: i1,j1
-      integer :: i,j
+      integer :: i, i1,j1
       integer :: displacem
       integer :: is,js,ks
       character(len=256) :: namelistfile
 
       call getarg(1, namelistfile)
+
       call read_config(trim(namelistfile))
 
       call read_init()
+
       call runoffspeed
 
       if (.not. allocated(chym_runoff)) allocate(chym_runoff(nlc,       &
@@ -366,9 +367,9 @@ module mod_iface
 
     subroutine runoffspeed
       implicit none
-      integer i,j,idir,land,intstep
-      real mann,wk(nlc,nbc)
-      real vmax,alfamin,alfamax,enne,xgamma,delta,tresh,hrad
+      integer i,j,idir,land
+      real mann
+      real alfamin,alfamax,enne,xgamma,delta,tresh,hrad
       xgamma = 0.33
       delta = 4.5                                       !cpar(8) in CHyM
       tresh = 100.0                                     !cpar(6) in CHyM

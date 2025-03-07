@@ -33,7 +33,7 @@ module mod_ncio
   type ncoutfile
     character(len=512) :: fname
     character(len=512) :: fcomment
-    integer :: nx, ny
+    integer :: nx, ny, lntypes
     integer :: handler
     integer, dimension(maxdim) :: idimid
     integer, dimension(maxvar) :: ivarid
@@ -83,6 +83,7 @@ module mod_ncio
   public :: create_outfile
   public :: dispose_outfile
   public :: add_variable
+  public :: set_writemod
   public :: write_variable
   public :: outfile_attribute
   public :: grid_dimensions
@@ -296,6 +297,9 @@ module mod_ncio
     call checkerror(__LINE__,'Cannot create dimension lon',finfo%fname)
     ncstatus = nf90_def_dim(finfo%handler,'lat',finfo%ny,finfo%idimid(2))
     call checkerror(__LINE__,'Cannot create dimension lon',finfo%fname)
+    ncstatus = nf90_def_dim(finfo%handler,'lntypes',finfo%lntypes, &
+                            finfo%idimid(3))
+    call checkerror(__LINE__,'Cannot create dimension lntypes',finfo%fname)
     ncstatus = nf90_put_att(finfo%handler,nf90_global,'Conventions','CF-1.6')
     call checkerror(__LINE__,'Cannot add basic attribute',finfo%fname)
     ncstatus = nf90_put_att(finfo%handler,nf90_global,'history',trim(dstring))
@@ -311,6 +315,34 @@ module mod_ncio
     call add_variable(finfo,lonid)
     call add_variable(finfo,areaid)
   end subroutine create_outfile
+
+  subroutine set_writemod(finfo,manning)
+    implicit none
+    type(ncoutfile), intent(inout) :: finfo
+    real, dimension(:) :: manning
+    integer :: varid
+    ncstatus = nf90_def_var(finfo%handler,"manning",      &
+                            nf90_float, finfo%idimid(3), &
+                            varid)
+    call checkerror(__LINE__, &
+                  'Cannot add variable manning', finfo%fname)
+    ncstatus = nf90_put_att(finfo%handler,varid, &
+                            'standard_name','manning_coefficient')
+    call checkerror(__LINE__, &
+                  'Cannot add standard name to manning', finfo%fname)
+    ncstatus = nf90_put_att(finfo%handler,varid, &
+                            'long_name','Manning coefficient')
+    call checkerror(__LINE__, &
+                  'Cannot add long name to manning', finfo%fname)
+    ncstatus = nf90_put_att(finfo%handler,varid, &
+                            'units','sm^1/3')
+    call checkerror(__LINE__, &
+                  'Cannot add units name to manning', finfo%fname)
+    ncstatus = nf90_enddef(finfo%handler)
+    call checkerror(__LINE__, 'Cannot put file in write mode', finfo%fname)
+    ncstatus = nf90_put_var(finfo%handler,varid,manning)
+    call checkerror(__LINE__, 'Cannot write in file', finfo%fname)
+  end subroutine set_writemod
 
   subroutine write_variable_real_2d(finfo,vid,val)
     implicit none

@@ -27,9 +27,6 @@ program main
 
   implicit none
 
-  integer :: ios, istep
-  integer :: i1,j1
-
   call mpi_init(mpierr)
   call mpi_comm_dup(mpi_comm_world,mycomm,mpierr)
   call mpi_comm_size(mycomm, nproc, mpierr)

@@ -41,19 +41,19 @@
   character(len=4) :: xyear
   character(len=2) :: xmonth
   logical :: bisest
-  character(len=32) :: isodate0 , isodate1 , source
+  character(len=32) :: isodate0 , isodate1
   character(len=64) :: timeunit
 
-      contains
+  contains
 !
-      subroutine read_config(ifile)
+    subroutine read_config(ifile)
       implicit none
 !
 !-----------------------------------------------------------------------
 !     Imported variable declarations
 !-----------------------------------------------------------------------
 !
-      character(len=*) :: ifile
+      character(len=*) , intent(in) :: ifile
 !
 !-----------------------------------------------------------------------
 !     Local variable declarations
@@ -66,12 +66,6 @@
 !     Read parameters
 !-----------------------------------------------------------------------
 !
-      call read_rec(ifile, 'NLON', fdum, pname)
-      nlon = int(fdum+0.001)
-      call read_rec(ifile, 'NLAT', fdum, pname)
-      nlat = int(fdum+0.001)
-      nbc = nlat
-      nlc = nlon
       call read_rec(ifile, 'CONVFAC', fdum, pname)
       convfac = fdum
       call read_rec(ifile, 'ISREAD', fdum, pname)
@@ -123,15 +117,41 @@
         call exit(1)
       end if
 
-      end subroutine read_config
+      if ( myid == 0 ) then
+        print *, 'Config read in.'
+      end if
+    end subroutine read_config
 
-
-      subroutine read_init()
+    subroutine read_init()
       use netcdf
       implicit none
-      integer :: i, ios
-      integer :: ihead(8)
-      integer :: ncid, varid, ok
+      integer :: ncid, dimid, varid
+
+!
+!-----------------------------------------------------------------------
+!     Open, read and close static file
+!-----------------------------------------------------------------------
+!
+      if (myid == 0 ) then
+        print*,"Reading Static Data file:", trim(filestatic)
+        call nio_check(nf90_open(trim(filestatic),                        &
+           nf90_nowrite, ncid),1)
+
+        call nio_check(nf90_inq_dimid(ncid,'lon',dimid),1)
+        call nio_check(nf90_inquire_dimension(ncid,dimid,len=nlon),1)
+        call nio_check(nf90_inq_dimid(ncid,'lat',dimid),1)
+        call nio_check(nf90_inquire_dimension(ncid,dimid,len=nlat),1)
+        print *, "DIMENSIONS : ", nlon,  ' x ', nlat
+      end if
+
+      call mpi_bcast(nlon,1,MPI_INT,0,mycomm,mpierr)
+      call mpi_bcast(nlat,1,MPI_INT,0,mycomm,mpierr)
+
+      nbc = nlat
+      nlc = nlon
+      if (myid == 0 ) then
+        print *, 'Allocating space.'
+      end if
       if (.not. allocated(alfa)) allocate(alfa(nlc,nbc))
       if (.not. allocated(fmap)) allocate(fmap(nlc,nbc))
       if (.not. allocated(accl)) allocate(accl(nlc,nbc))
@@ -155,168 +175,69 @@
       if (.not. allocated(chym_lat)) allocate(chym_lat(nlc,nbc))
       if (.not. allocated(chym_lon)) allocate(chym_lon(nlc,nbc))
       if (.not. allocated(manning)) allocate(manning(lntypes))
-      port=0; wkm1=0; bwet=0; h2o=0
+
+      port = 0
+      wkm1 = 0
+      bwet = 0
+      h2o = 0
       port_qmaxs = 0
-!
-!-----------------------------------------------------------------------
-!     Set coefficients
-!-----------------------------------------------------------------------
-!
-      !manning = 0.043
-      manning( 1) = 10.0
-      manning( 2) = 0.040
-      manning( 3) = 0.150
-      manning( 4) = 0.100
-      manning( 5) = 0.100
-      manning( 6) = 0.100
-      manning( 7) = 0.650
-      manning( 8) = 0.030
-      manning( 9) = 0.030
-      manning(10) = 0.080
-      manning(11) = 0.030
-      manning(12) = 0.030
-      manning(13) = 0.080
-      manning(14) = 0.035
-      manning(15) = 0.035
-      manning(16) = 0.080
-      manning(17) = 0.080
-      manning(18) = 0.120
-      manning(19) = 0.150
-      manning(20) = 0.150
-      manning(21) = 0.150
-      manning(22) = 0.120
-      manning(23) = 0.100
-      manning(24) = 0.110
-      manning(25) = 0.110
-      manning(26) = 0.110
-      manning(27) = 0.150
-      manning(28) = 0.180
-      manning(29) = 0.180
-      manning(30) = 0.075
-      manning(31) = 0.250
-      manning(32) = 0.100
-      manning(33) = 0.180
-      manning(34) = 0.100
-      manning(35) = 0.075
-      manning(36) = 0.055
-      manning(37) = 0.055
-      manning(38) = 0.063
-      manning(39) = 0.060
-      manning(40) = 0.080
-      manning(41) = 0.080
-      manning(42) = 0.040
-      manning(43) = 0.100
-      manning(44) = 0.080
-      manning(45) = 0.080
-      manning(46) = 0.080
-      manning(47) = 0.080
-      manning(48) = 0.100
-      manning(49) = 0.030
-      manning(50) = 0.030
-      manning(51) = 0.030
-      manning(52) = 0.030
-      manning(53) = 0.030
-      manning(54) = 0.120
-      manning(55) = 0.075
-      manning(56) = 0.100
-      manning(57) = 0.100
-      manning(58) = 0.080
-      manning(58) = 0.080
-      manning(59) = 0.080
-      manning(60) = 0.100
-      manning(61) = 0.100
-      manning(62) = 0.150
-      manning(63) = 0.075
-      manning(64) = 0.080
-      manning(65) = 0.080
-      manning(66) = 0.080
-      manning(67) = 0.080
-      manning(68) = 0.080
-      manning(69) = 0.030
-      manning(70) = 0.030
-      manning(71) = 0.035
-      manning(72) = 0.075
-      manning(73) = 0.035
-      manning(74) = 0.035
-      manning(75) = 0.035
-      manning(76) = 0.035
-      manning(77) = 0.150
-      manning(78) = 0.120
-      manning(79) = 0.120
-      manning(80) = 0.035
-      manning(81) = 0.035
-      manning(82) = 0.035
-      manning(83) = 0.035
-      manning(84) = 0.035
-      manning(85) = 0.035
-      manning(86) = 0.030
-      manning(87) = 0.030
-      manning(88) = 0.050
-      manning(89) = 0.100
-      manning(91) = 0.100
-      manning(92) = 0.080
-      manning(93) = 0.045
-      manning(94) = 0.040
-      manning(95) = 0.120
-      manning(96) = 0.100
-      manning(97:lntypes) = 0.043
+
+      if (myid == 0 ) then
+
+        print *, 'Reading data from static file...'
+
+        call nio_check(nf90_inq_varid(ncid, 'manning', varid),1)
+        call nio_check(nf90_get_var(ncid, varid, manning),1)
+
+        call nio_check(nf90_inq_varid(ncid, 'lon', varid),2)
+        call nio_check(nf90_get_var(ncid, varid, chym_lon(:,:)),3)
+
+        call nio_check(nf90_inq_varid(ncid, 'lat', varid),4)
+        call nio_check(nf90_get_var(ncid, varid, chym_lat(:,:)),5)
+
+        call nio_check(nf90_inq_varid(ncid, 'fdm', varid),6)
+        call nio_check(nf90_get_var(ncid, varid, fmap(:,:)),7)
+
+        call nio_check(nf90_inq_varid(ncid, 'acc', varid),8)
+        call nio_check(nf90_get_var(ncid, varid, accl(:,:)),9)
+
+        call nio_check(nf90_inq_varid(ncid, 'lus', varid),10)
+        call nio_check(nf90_get_var(ncid, varid, luse(:,:)),11)
+
+        call nio_check(nf90_inq_varid(ncid, 'aer', varid),12)
+        call nio_check(nf90_get_var(ncid, varid, chym_area(:,:)),13)
+
+        call nio_check(nf90_inq_varid(ncid, 'dra', varid),14)
+        call nio_check(nf90_get_var(ncid, varid, chym_drai(:,:)),15)
+
+        call nio_check(nf90_close(ncid),16)
+
+        print *, 'Done!'
+
+      end if
 !
 !-----------------------------------------------------------------------
 !     Open, read and close restart file
 !-----------------------------------------------------------------------
 !
-      pstep = 0
-      if (isread /= 0) then
-      if (myid == 0 ) then
-        print*, "read chym restart data"
-        call chym_inifile()
-      end if
-      end if
-
-!
-!-----------------------------------------------------------------------
-!     Open, read and close static file
-!-----------------------------------------------------------------------
-!
-      if (myid == 0 ) then
-      print*,"Inizio lettura statico file:", trim(filestatic)
-      call nio_check(nf90_open(trim(filestatic),                        &
-         nf90_nowrite, ncid),1)
-      call nio_check(nf90_inq_varid(ncid, 'lon', varid),2)
-      call nio_check(nf90_get_var(ncid, varid, chym_lon(:,:)),3)
-
-      call nio_check(nf90_inq_varid(ncid, 'lat', varid),4)
-      call nio_check(nf90_get_var(ncid, varid, chym_lat(:,:)),5)
-
-      call nio_check(nf90_inq_varid(ncid, 'fdm', varid),6)
-      call nio_check(nf90_get_var(ncid, varid, fmap(:,:)),7)
-
-      call nio_check(nf90_inq_varid(ncid, 'acc', varid),8)
-      call nio_check(nf90_get_var(ncid, varid, accl(:,:)),9)
-
-      call nio_check(nf90_inq_varid(ncid, 'lus', varid),10)
-      call nio_check(nf90_get_var(ncid, varid, luse(:,:)),11)
-
-      call nio_check(nf90_inq_varid(ncid, 'aer', varid),12)
-      call nio_check(nf90_get_var(ncid, varid, chym_area(:,:)),13)
-
-      call nio_check(nf90_inq_varid(ncid, 'dra', varid),14)
-      call nio_check(nf90_get_var(ncid, varid, chym_drai(:,:)),15)
-
-      call nio_check(nf90_close(ncid),16)
-
-      end if
-
-      call mpi_bcast(chym_lon(1,1),nbc*nlc,MPI_REAL, 0,mycomm,mpierr)
-      call mpi_bcast(chym_lat(1,1),nbc*nlc,MPI_REAL, 0,mycomm,mpierr)
-      call mpi_bcast(fmap(1,1),nbc*nlc,MPI_REAL, 0,mycomm,mpierr)
-      call mpi_bcast(accl(1,1),nbc*nlc,MPI_REAL, 0,mycomm,mpierr)
-      call mpi_bcast(luse(1,1),nbc*nlc,MPI_REAL, 0,mycomm,mpierr)
-      call mpi_bcast(chym_area(1,1),nbc*nlc,MPI_REAL, 0,mycomm,mpierr)
-      call mpi_bcast(chym_drai(1,1),nbc*nlc,MPI_REAL, 0,mycomm,mpierr)
+      call mpi_bcast(manning,lntypes,MPI_REAL, 0,mycomm,mpierr)
+      call mpi_bcast(chym_lon,nbc*nlc,MPI_REAL, 0,mycomm,mpierr)
+      call mpi_bcast(chym_lat,nbc*nlc,MPI_REAL, 0,mycomm,mpierr)
+      call mpi_bcast(fmap,nbc*nlc,MPI_REAL, 0,mycomm,mpierr)
+      call mpi_bcast(accl,nbc*nlc,MPI_REAL, 0,mycomm,mpierr)
+      call mpi_bcast(luse,nbc*nlc,MPI_INT, 0,mycomm,mpierr)
+      call mpi_bcast(chym_area,nbc*nlc,MPI_REAL, 0,mycomm,mpierr)
+      call mpi_bcast(chym_drai,nbc*nlc,MPI_REAL, 0,mycomm,mpierr)
       call mpi_barrier(mycomm,mpierr)
 
-      end subroutine read_init
+      pstep = 0
+      if (isread /= 0) then
+        if (myid == 0 ) then
+          print*, "read chym restart data"
+          call chym_inifile()
+        end if
+      end if
+    end subroutine read_init
 
 
   subroutine createfile(outname,ncdata)
@@ -325,7 +246,6 @@
     character(len=*) , intent(in) :: outname
     integer, intent(in) :: ncdata
     logical :: fcentury
-    integer :: i,j
 
     fcentury = .true.
     chunksizes(1) = nlon/5
@@ -478,7 +398,6 @@
 !     Local variable declarations
 !-----------------------------------------------------------------------
 !
-      integer :: i
       character(len=100) :: str
       chunksizes(1) = nlon/5
       chunksizes(2) = nlat/5
@@ -593,7 +512,6 @@
 !     Local variable declarations
 !-----------------------------------------------------------------------
 !
-      integer :: i
       character(len=100) :: str
       chunksizes(1) = nlon/5
       chunksizes(2) = nlat/5
@@ -704,7 +622,6 @@
     character(len=*) , intent(in) :: restname
     integer, intent(in) :: ncdata
     logical :: fcentury
-    integer :: i, j
     fcentury = .true.
       chunksizes(1) = nlon/5
       chunksizes(2) = nlat/5
@@ -849,7 +766,6 @@
     character(len=*) , intent(in) :: restname
     integer, intent(in) :: ncdata
     logical :: fcentury
-    integer :: i, j
     fcentury = .true.
       chunksizes(1) = nlon/5
       chunksizes(2) = nlat/5
@@ -1495,7 +1411,6 @@
     implicit none
     integer , intent(in) :: vname_id,ncid,iistep
     integer(4) , dimension(:,:) , intent(in) :: ival
-    integer :: indx
     istart(1) = 1
     istart(2) = 1
     istart(3) = iistep

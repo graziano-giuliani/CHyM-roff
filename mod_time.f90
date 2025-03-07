@@ -109,7 +109,7 @@ module mod_time
     implicit none
     integer :: dindex
     intent (in) dindex
-    integer :: id , ih , iii , ilm , im , iy
+    integer :: id , ih , ilm , im , iy
     character(10) :: tmps
     if ( dindex==1999123123 .or. (trim(calendario) =='360_day' .and. dindex==1999123023) ) then
       increasetime = 2000010100

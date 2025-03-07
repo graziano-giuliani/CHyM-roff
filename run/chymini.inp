@@ -1,9 +1,5 @@
 Namelist for CHyM coupled model
 
-NLON: 
-6313
-NLAT:
-5304
 CONVFAC: Unit conversion factor for runoff. Expected kg/m^2/s (mm/s). ERA5 is 1.0/3.6
 1.0
 ISREAD: Read initialization file ( 0 = start from rest, 1 = read model initialization file)
