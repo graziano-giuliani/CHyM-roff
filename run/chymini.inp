@@ -1,7 +1,7 @@
 Namelist for CHyM coupled model
 
-CONVFAC: Unit conversion factor for runoff. Expected kg/m^2/s (mm/s). ERA5 is 1.0/3.6
-1.0
+CONVFAC: Unit conversion factor for runoff. Expected kg/m^2/s (mm/s). ERA5 is 1.0/3600
+.000277777777
 ISREAD: Read initialization file ( 0 = start from rest, 1 = read model initialization file)
 0
 ISWRIT: time step for writing a restart file (0 = No)
@@ -9,29 +9,29 @@ ISWRIT: time step for writing a restart file (0 = No)
 NDSTEP : Time step of the model (hours)
 24
 NSTEP : Number of time steps (days) the model should run 4749
-1800
+365
 NDTST : Number of model steps per NDSTEP
 300
 NINIRUN : Start timestep of input runoff data. Put 0 to start from first timestep
 0
 TSDATE : Start date of this run in the format YYYYMMDDHH (Integer)
-1976010101
+1977010100
 TEDATE : End date of this run in the format YYYYMMDDHH (Integer) 
-2070010101
+1983123100
 TDNCAL: calendario
 Gregorian
 TDNSIM: Simulation name (used for output file name and restart file name)
-CLMcom-CCLM4-8-17/sim_name
+output/med
 TDNINP: File name of input runoff data
-input/mrro
+input/runoff
 TDNINI: File name of CHyM model initialization file
-output/chym_rst_20210101.nc
+output/med_rst.nc
 TDNOUT: File name of CHyM model output file
-CLMcom-CCLM4-8-17/chym_dis_1971_old_2000.nc
+output/med_dis_2000010100.nc
 TDNQMAX: File name of CHyM model qmax file
-CLMcom-CCLM4-8-17/qmax_1971.nc
+output/med_2000010100_qmax.nc
 TDNRES: File name of CHyM model restart file 
-CLMcom-CCLM4-8-17/chym_res_1971_old_2000.nc
+output/med_2001010100_rst.nc
 TDNSTK: File name of CHyM input static fields file
-filestatic_old.nc
+chym_stk.nc
 The End
