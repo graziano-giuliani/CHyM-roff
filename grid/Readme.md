@@ -2,16 +2,18 @@
 
 This file describes the procedure to create input files for the CHyM preproc.
 
-## Gridfile
+## Create the Gridfile
 
 Create grid file using the python script, either onto regular
-latitude-longitude or an ORCA NEMO tripolar grid (needs coordinates file).
+latitude-longitude grid or an ORCA NEMO tripolar grid
 
-Run the python script **makegrid.py** to create the **gridfile.nc**
+### ORCA NEMO Mediterranenan Grid
 
-### ORCA Mediterranenan Grid
+I have an input file, **namelist_R12_chym**, for the CHyM Mediterranean
+domain in the **MED12-ocean-mit** repository here:
 
-I have an input file, **namelist_R12_chym**, for the CHyM Mediterranean domain.
+    https://github.com/graziano-giuliani/MED12-ocean-mit
+
 In the **MED12-ocean-mit/grid** directory, run:
 
     ./create_coordinates namelist_R12_chym
@@ -19,15 +21,19 @@ In the **MED12-ocean-mit/grid** directory, run:
 and copy the file **1_coordinates_ORCA_R12.nc** in this directory as the file
 **orca_coordinates.nc**.
 
-### Regulat latitude-longitude grid
+### Regular lat-lon grid
 
 Edit the **makegrid.yaml** input file for extremes and resolution.
 
-## Create input datasets for the Mediterranean basin
+### Create the grid
+
+Run the python script **makegrid.py** to create the **gridfile.nc**
+
+## Input datasets for the Mediterranean basin
 
 ### Source global datasets:
 
-The Hydorsheds and HydroBasins data can be obtained from:
+The HydroSheds, HydroRivers and HydroBasins data can be obtained from:
 
     https://www.hydrosheds.org/
 
@@ -48,42 +54,51 @@ grid [GDAL 3.5.2]:
        -projwin -7.0 63.5 48.5 27.0 \
        gbogegeo20.tif GLCC_gboggeo20_Mediterraneo.nc
 
-Some renaming [nco 5.1.3]:
+Some renaming and interpolation [nco 5.1.3, cdo 2.2.0]:
 
      ncrename -h -v Band1,luc GLCC_gboggeo20_Mediterraneo.nc
      ncatted -h -a standard_name,luc,c,c,class_type \
                 -a long_name,luc,m,c,"Class Type" \
                 -a units,luc,c,c,1 GLCC_gboggeo20_Mediterraneo.nc
+     cdo remaplaf,gridfile.nc GLCC_gboggeo20_Mediterraneo.nc landfile.nc
 
      ncrename -h -v Band1,dem HydroSheds_15s_Mediterraneo.nc
      ncatted -h -a standard_name,dem,c,c,elevation \
                 -a long_name,dem,m,c,"Digital Elevation Model" \
                 -a units,dem,c,c,m HydroSheds_15s_Mediterraneo.nc
 
-Interpolate data on CHyM grid [cdo 2.2.0]:
+Create clipped river network shape file:
 
-     cdo remapdis,gridfile.nc,25 HydroSheds_15s_Mediterraneo.nc demfile.nc
-     cdo remaplaf,gridfile.nc GLCC_gboggeo20_Mediterraneo.nc landfile.nc
+     ogr2ogr -clipsrc -7.0 27.0 48.5 63.5 filtered.shp HydroRIVERS_v10.shp 
 
 ## Create land/ocean mask
 
 ### ORCA Mediterranenan Grid
 
 For the ORCA Med GRID, we can use the MITgcm mask file to create a common
-land/ocean mask. The procedure will mark:
+land/ocean mask. After running the bathymetry step of the MITgcm processing,
+remap the ocean mask onto the CHyM grid:
+
+    cdo remapnn,gridfile.nc mitgcm_mask.nc maskfile.nc
+
+### Regular lat/lon grid
+
+Run the script **makemaskll.py**, which creates the mask based on the
+landuse category in the file **landfile.nc**
+
+### Cleanup the mask and select only relevant basins
+
+To reduce computational cost, we can create a digital mask to select only
+the relevant basins. The script in this directory, **cleanmask.py**, is tailored over the Mediterranean, but the user can look in hydrobasins file for the code
+of the river basins in her area of interest. This script sets:
 
  * 0 : land points the CHyM should work on
  * 1 : Ocean points
  * 2 : Points that should be masked out.
 
-     cdo remapnn,gridfile.nc mitgcm_mask.nc maskfile.nc
+To run it:
+
      python3 cleanmask.py maskfile.nc
-
-### Regular Latitude-Longitude grid
-
-The maskfile is created from the **demfile.nc**
-
-     cdo 
 
 ## Create River Network enforcing (optional)
 
@@ -107,3 +122,14 @@ this directory. Create a raster data out of that:
      ncrename -v Band1,network rivernet_ll.nc
      cdo remaplaf,gridfile.nc rivernet_ll.nc rivernet.nc
 
+## Create the conditioned DEM for the model
+
+Once all data are in the directory, the script **makedem.py** shoudl be
+executed to create the input **demfile.nc**
+
+Once this is done, the input files for the CHyM preproc are ready:
+
+  * gridfile.nc : File containing the grid geolocation informations
+  * demfile.nc : Conditioned Digital elevation model topography
+  * landfile.nc : Land use categories
+  * maskfile.nc : CHyM land sea mask
