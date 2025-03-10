@@ -45,7 +45,9 @@ module mod_common
   integer, public , parameter :: lntypes = 110
 
   real, dimension(:,:) , allocatable, public :: lat
+  real, dimension(:,:,:) , allocatable, public :: corner_lat
   real, dimension(:,:) , allocatable, public :: lon
+  real, dimension(:,:,:) , allocatable, public :: corner_lon
   real, dimension(:,:) , allocatable, public :: area
   real, dimension(:,:) , allocatable, public :: dem
   integer, dimension(:,:) , allocatable, public :: network
@@ -164,7 +166,9 @@ module mod_common
   subroutine getspace
     implicit none
     allocate(lat(nlon,nlat))
+    allocate(corner_lat(4,nlon,nlat))
     allocate(lon(nlon,nlat))
+    allocate(corner_lon(4,nlon,nlat))
     allocate(area(nlon,nlat))
     allocate(dem(nlon,nlat))
     allocate(luc(nlon,nlat))
@@ -183,7 +187,9 @@ module mod_common
   subroutine freespace
     implicit none
     deallocate(lat)
+    deallocate(corner_lat)
     deallocate(lon)
+    deallocate(corner_lon)
     deallocate(area)
     deallocate(dem)
     deallocate(luc)

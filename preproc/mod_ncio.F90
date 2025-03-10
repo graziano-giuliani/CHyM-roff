@@ -131,15 +131,18 @@ module mod_ncio
     call checkerror(__LINE__,'Cannot close',gridfile)
   end subroutine grid_dimensions
 
-  subroutine grid_coordinates(gridfile,lat,lon,area)
+  subroutine grid_coordinates(gridfile,lat,lon,corner_lat,corner_lon,area)
     implicit none
     character(len=*) , intent(in) :: gridfile
     real, dimension(:,:), intent(out) :: lat, lon, area
+    real, dimension(:,:,:), intent(out) :: corner_lat, corner_lon
     integer :: ncid
     ncstatus = nf90_open(gridfile,nf90_nowrite,ncid)
     call checkerror(__LINE__,'Cannot open',gridfile)
     call read_variable(ncid,gridfile,'grid_center_lon',lon)
     call read_variable(ncid,gridfile,'grid_center_lat',lat)
+    call read_variable(ncid,gridfile,'grid_corner_lat',corner_lat)
+    call read_variable(ncid,gridfile,'grid_corner_lat',corner_lon)
     call read_variable(ncid,gridfile,'cell_area',area)
     ncstatus = nf90_close(ncid)
     call checkerror(__LINE__,'Cannot close',gridfile)
@@ -292,13 +295,15 @@ module mod_ncio
         ' : Created by CHyM preproc program'
     ncstatus = nf90_create(finfo%fname,&
                 ior(nf90_netcdf4,nf90_clobber),finfo%handler)
+    ncstatus = nf90_def_dim(finfo%handler,'corners',4,finfo%idimid(1))
+    call checkerror(__LINE__,'Cannot create dimension lntypes',finfo%fname)
     call checkerror(__LINE__,'Cannot create file',finfo%fname)
-    ncstatus = nf90_def_dim(finfo%handler,'lon',finfo%nx,finfo%idimid(1))
+    ncstatus = nf90_def_dim(finfo%handler,'lon',finfo%nx,finfo%idimid(2))
     call checkerror(__LINE__,'Cannot create dimension lon',finfo%fname)
-    ncstatus = nf90_def_dim(finfo%handler,'lat',finfo%ny,finfo%idimid(2))
+    ncstatus = nf90_def_dim(finfo%handler,'lat',finfo%ny,finfo%idimid(3))
     call checkerror(__LINE__,'Cannot create dimension lon',finfo%fname)
     ncstatus = nf90_def_dim(finfo%handler,'lntypes',finfo%lntypes, &
-                            finfo%idimid(3))
+                            finfo%idimid(4))
     call checkerror(__LINE__,'Cannot create dimension lntypes',finfo%fname)
     ncstatus = nf90_put_att(finfo%handler,nf90_global,'Conventions','CF-1.6')
     call checkerror(__LINE__,'Cannot add basic attribute',finfo%fname)
@@ -316,32 +321,70 @@ module mod_ncio
     call add_variable(finfo,areaid)
   end subroutine create_outfile
 
-  subroutine set_writemod(finfo,manning)
+  subroutine set_writemod(finfo,manning,lat,lon,clat,clon,area)
     implicit none
     type(ncoutfile), intent(inout) :: finfo
+    real, dimension(:,:) :: lat, lon, area
+    real, dimension(:,:,:) :: clon, clat
     real, dimension(:) :: manning
-    integer :: varid
+    integer :: varid(3)
+    ncstatus = nf90_def_var(finfo%handler,"corner_lat",      &
+                            nf90_float, finfo%idimid(1:3), varid(1))
+    call checkerror(__LINE__, 'Cannot add variable corner lat', finfo%fname)
+    ncstatus = nf90_put_att(finfo%handler,varid(1), &
+                            'standard_name','latitude_bounds')
+    call checkerror(__LINE__, 'Cannot add attribute to corner lat', finfo%fname)
+    ncstatus = nf90_put_att(finfo%handler,varid(1), &
+                            'long_name','Latitude Bounds')
+    call checkerror(__LINE__, 'Cannot add attribute to corner lat', finfo%fname)
+    ncstatus = nf90_put_att(finfo%handler,varid(1), 'units','degrees_north')
+    call checkerror(__LINE__, 'Cannot add attribute to corner lat', finfo%fname)
+
+    ncstatus = nf90_def_var(finfo%handler,"corner_lon",      &
+                            nf90_float, finfo%idimid(1:3), varid(2))
+    call checkerror(__LINE__, 'Cannot add variable corner lon', finfo%fname)
+    ncstatus = nf90_put_att(finfo%handler,varid(2), &
+                            'standard_name','longitude_bounds')
+    call checkerror(__LINE__, 'Cannot add attribute to corner lon', finfo%fname)
+    ncstatus = nf90_put_att(finfo%handler,varid(2), &
+                            'long_name','Longitude Bounds')
+    call checkerror(__LINE__, 'Cannot add attribute to corner lon', finfo%fname)
+    ncstatus = nf90_put_att(finfo%handler,varid(2), 'units','degrees_east')
+    call checkerror(__LINE__, 'Cannot add attribute to corner lon', finfo%fname)
+
     ncstatus = nf90_def_var(finfo%handler,"manning",      &
-                            nf90_float, finfo%idimid(3), &
-                            varid)
+                            nf90_float, finfo%idimid(4), &
+                            varid(3))
     call checkerror(__LINE__, &
                   'Cannot add variable manning', finfo%fname)
-    ncstatus = nf90_put_att(finfo%handler,varid, &
+    ncstatus = nf90_put_att(finfo%handler,varid(3), &
                             'standard_name','manning_coefficient')
     call checkerror(__LINE__, &
                   'Cannot add standard name to manning', finfo%fname)
-    ncstatus = nf90_put_att(finfo%handler,varid, &
+    ncstatus = nf90_put_att(finfo%handler,varid(3), &
                             'long_name','Manning coefficient')
     call checkerror(__LINE__, &
                   'Cannot add long name to manning', finfo%fname)
-    ncstatus = nf90_put_att(finfo%handler,varid, &
+    ncstatus = nf90_put_att(finfo%handler,varid(3), &
                             'units','sm^1/3')
     call checkerror(__LINE__, &
                   'Cannot add units name to manning', finfo%fname)
+
     ncstatus = nf90_enddef(finfo%handler)
     call checkerror(__LINE__, 'Cannot put file in write mode', finfo%fname)
-    ncstatus = nf90_put_var(finfo%handler,varid,manning)
-    call checkerror(__LINE__, 'Cannot write in file', finfo%fname)
+
+    ncstatus = nf90_put_var(finfo%handler,latid,lat)
+    call checkerror(__LINE__, 'Cannot write lat in file', finfo%fname)
+    ncstatus = nf90_put_var(finfo%handler,lonid,lon)
+    call checkerror(__LINE__, 'Cannot write area in file', finfo%fname)
+    ncstatus = nf90_put_var(finfo%handler,areaid,lon)
+    call checkerror(__LINE__, 'Cannot write area in file', finfo%fname)
+    ncstatus = nf90_put_var(finfo%handler,varid(1),clat)
+    call checkerror(__LINE__, 'Cannot write corner lat in file', finfo%fname)
+    ncstatus = nf90_put_var(finfo%handler,varid(2),clon)
+    call checkerror(__LINE__, 'Cannot write corner lon in file', finfo%fname)
+    ncstatus = nf90_put_var(finfo%handler,varid(3),manning)
+    call checkerror(__LINE__, 'Cannot write manning in file', finfo%fname)
   end subroutine set_writemod
 
   subroutine write_variable_real_2d(finfo,vid,val)
@@ -371,7 +414,7 @@ module mod_ncio
     type(ncoutfile), intent(inout) :: finfo
     integer, intent(in) :: vid
     ncstatus = nf90_def_var(finfo%handler,ncvars(vid)%vname,      &
-                            ncvars(vid)%vtype, finfo%idimid(1:2), &
+                            ncvars(vid)%vtype, finfo%idimid(2:3), &
                             finfo%ivarid(vid))
     call checkerror(__LINE__, &
                   'Cannot add basic variable '//ncvars(vid)%vname, &

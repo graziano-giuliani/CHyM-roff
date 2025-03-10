@@ -45,7 +45,7 @@ program preproc
   write(output_unit, '(7x,a)') 'Reading data from input files.'
   call grid_dimensions(gridfile,nlat,nlon)
   call getspace( )
-  call grid_coordinates(gridfile,lat,lon,area)
+  call grid_coordinates(gridfile,lat,lon,corner_lat,corner_lon,area)
   area = area * 1.0e-6 ! Make it in km2
   minlat = minval(lat)
   maxlat = maxval(lat)
@@ -92,11 +92,7 @@ program preproc
   call add_variable(outf,runid)
   call add_variable(outf,alfid)
 
-  call set_writemod(outf,manning)
-
-  call write_variable(outf,latid,lat)
-  call write_variable(outf,lonid,lon)
-  call write_variable(outf,areaid,area)
+  call set_writemod(outf,manning,lat,lon,corner_lat,corner_lon,area)
 
   call write_variable(outf,demid,dem)
   call write_variable(outf,lucid,luc)

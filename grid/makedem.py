@@ -143,10 +143,8 @@ def process_point(row):
             row[1] = 2.0
     return row
 
-#tqdm.pandas()
-#out_dem = out_dem.progress_apply(process_point,
-#        raw = True, axis = 1, result_type = 'expand')
-out_dem = out_dem.apply(process_point,
+tqdm.pandas()
+out_dem = out_dem.progress_apply(process_point,
         raw = True, axis = 1, result_type = 'expand')
 
 print('Data filling complete.')
