@@ -142,7 +142,7 @@ module mod_ncio
     call read_variable(ncid,gridfile,'grid_center_lon',lon)
     call read_variable(ncid,gridfile,'grid_center_lat',lat)
     call read_variable(ncid,gridfile,'grid_corner_lat',corner_lat)
-    call read_variable(ncid,gridfile,'grid_corner_lat',corner_lon)
+    call read_variable(ncid,gridfile,'grid_corner_lon',corner_lon)
     call read_variable(ncid,gridfile,'cell_area',area)
     ncstatus = nf90_close(ncid)
     call checkerror(__LINE__,'Cannot close',gridfile)
