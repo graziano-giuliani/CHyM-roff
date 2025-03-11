@@ -21,7 +21,6 @@
 program main
 
   use mod_iface
-  use mod_param, only : pstep, nstep
   use mod_mpimess
   use mod_varandtypes
 
@@ -31,10 +30,9 @@ program main
   call mpi_comm_dup(mpi_comm_world,mycomm,mpierr)
   call mpi_comm_size(mycomm, nproc, mpierr)
   call mpi_comm_rank(mycomm, myid, mpierr)
-  call chym_init()
-  pstep = 1
-  call chym_run(pstep, nstep)
-  call chym_close
+  call chym_init( )
+  call chym_run( )
+  call chym_close( )
 
 end program main
 

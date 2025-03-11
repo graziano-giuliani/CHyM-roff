@@ -1,32 +1,28 @@
 
-      module mod_io
+module mod_io
 
-      use mod_param
-      use mod_mpimess
-      use mod_varandtypes
-      use mod_time
+  use, intrinsic :: iso_fortran_env
+  use mod_param
+  use mod_mpimess
+  use mod_varandtypes
+  use mod_time
 
-      implicit none
-      private
+  implicit none
+  private
 
-      integer , dimension(4) , save :: icount , istart
+  integer , dimension(4) , save :: icount , istart
 
-      public :: read_config
-      public :: read_init
-      public :: out_init
-      public :: qmax_init
-      public :: chym_out
-      public :: chym_wqmax
-      public :: read_runoff
-      public :: chym_rst
-      public :: createfile , closefile
-      public :: createfile_rst
-      public :: createfile_qmax
-      public :: add_timestep
-      public :: createnc1
-      public :: createnc2
-      public :: createnc3
-      public :: write_dynvar
+  public :: read_config
+  public :: read_init
+  public :: read_runoff
+  public :: createfile , closefile
+  public :: createfile_rst
+  public :: createfile_qmax
+  public :: add_timestep
+  public :: createnc1
+  public :: createnc2
+  public :: createnc3
+  public :: write_dynvar
 
   interface write_dynvar
     module procedure write_dynvar_real
@@ -45,7 +41,7 @@
   character(len=64) :: timeunit
 
   contains
-!
+
     subroutine read_config(ifile)
       implicit none
 !
@@ -59,58 +55,65 @@
 !     Local variable declarations
 !-----------------------------------------------------------------------
 !
-      real :: fdum
-      character(len=100) :: pname
+      integer :: iretval
+      integer :: lun
+
+      namelist /iniparam/ convfac
+      namelist /inputparam/ isread, inirun, yday, dstep, step, &
+                            tdninp, tdnini, tdnstk
+      namelist /outparam/ iorstfreq, tdnsim
+      namelist /timeparam/ sdate, edate, calendar
 !
 !-----------------------------------------------------------------------
 !     Read parameters
 !-----------------------------------------------------------------------
 !
-      call read_rec(ifile, 'CONVFAC', fdum, pname)
-      convfac = fdum
-      call read_rec(ifile, 'ISREAD', fdum, pname)
-      isread = int(fdum+0.001)
-      call read_rec(ifile, 'ISWRIT', fdum, pname)
-      iswrit = int(fdum+0.001)
-      call read_rec(ifile, 'TSDATE', fdum, tdate)
-      read(tdate(1:4),*) jahr1
-      read(tdate(5:6),*) jahr2
-      read(tdate(7:8),*) jahr3
-      read(tdate(9:10),*) jahr4
-      read(tdate(1:10),*) sdate
-      call read_rec(ifile, 'TEDATE', fdum, tdate)
-      read(tdate(1:10),*) edate
-      call read_rec(ifile, 'NDSTEP', fdum, pname)
-      dstep = int(fdum+0.001)
-      call read_rec(ifile, 'NSTEP', fdum, pname)
-      nstep = int(fdum+0.001)
-      call read_rec(ifile, 'NDTST', fdum, pname)
-      step = int(fdum+0.001)
-      call read_rec(ifile, 'NINIRUN', fdum, pname)
-      inirun = int(fdum+0.001)
-      call read_rec(ifile, 'NINYDAY', fdum, pname)
-      yday = int(fdum+0.001)
-!
-      call read_rec(ifile, 'TDNCAL', fdum, calendario)
-      call read_rec(ifile, 'TDNSIM', fdum, sim_name)
-      call read_rec(ifile, 'TDNINP', fdum, filemrro)
-      call read_rec(ifile, 'TDNRES', fdum, chym_restart)
-      call read_rec(ifile, 'TDNINI', fdum, chym_initial)
-      call read_rec(ifile, 'TDNOUT', fdum, chym_output)
-      call read_rec(ifile, 'TDNQMAX', fdum, chym_qmax)
-      call read_rec(ifile, 'TDNSTK', fdum, filestatic)
-!
+      open(newunit=lun, file=ifile, status='old', &
+           action='read', iostat=iretval)
+      if ( iretval /= 0 ) then
+        write(error_unit,*) 'Error opening namelist file'//trim(ifile)
+        stop
+      end if
+      read(lun, nml=iniparam, iostat=iretval)
+      if ( iretval /= 0 ) then
+        write(error_unit,*) 'Error reading iniparam namelist'
+        stop
+      end if
+      rewind(lun)
+      read(lun, nml=inputparam, iostat=iretval)
+      if ( iretval /= 0 ) then
+        write(error_unit,*) 'Error reading inputparam namelist'
+        stop
+      end if
+      rewind(lun)
+      iorstfreq = 2 ! monthly
+      read(lun, nml=outparam, iostat=iretval)
+      if ( iretval /= 0 ) then
+        write(error_unit,*) 'Error reading outparam namelist'
+        stop
+      end if
+      rewind(lun)
+      read(lun, nml=timeparam, iostat=iretval)
+      if ( iretval /= 0 ) then
+        write(error_unit,*) 'Error reading timeparam namelist'
+        stop
+      end if
+      jahr1 = sdate/1000000
+      jahr2 = (sdate-jahr1)/10000
+      jahr3 = (sdate-(jahr1+jahr2))/100
+      jahr4 = (sdate-(jahr1+jahr2+jahr3))
+
       time = sdate
-      if (  trim(calendario) == "gregorian" &
-       .or. trim(calendario) == "proleptic" &
-       .or. trim(calendario) == "Gregorian" &
-       .or. trim(calendario) == "standard"  &
-       .or. trim(calendario) == "proleptic_gregorian") then
+      if (  trim(calendar) == "gregorian" &
+       .or. trim(calendar) == "proleptic" &
+       .or. trim(calendar) == "Gregorian" &
+       .or. trim(calendar) == "standard"  &
+       .or. trim(calendar) == "proleptic_gregorian") then
 
         ical = 0
-      else if (trim(calendario) == "no_leap" .or. trim(calendario) == "365_day") then
+      else if (trim(calendar) == "no_leap" .or. trim(calendar) == "365_day") then
         ical = 1
-      else if (trim(calendario) == "360_day") then
+      else if (trim(calendar) == "360_day") then
         ical = 2
       else
         print*,"ERROR please define calendar!"
@@ -133,8 +136,8 @@
 !-----------------------------------------------------------------------
 !
       if (myid == 0 ) then
-        print*,"Reading Static Data file:", trim(filestatic)
-        call nio_check(nf90_open(trim(filestatic),                        &
+        print*,"Reading Static Data file:", trim(tdnstk)
+        call nio_check(nf90_open(trim(tdnstk),                        &
            nf90_nowrite, ncid),1)
 
         call nio_check(nf90_inq_dimid(ncid,'lon',dimid),1)
@@ -239,7 +242,6 @@
       call mpi_bcast(chym_drai,nbc*nlc,MPI_REAL, 0,mycomm,mpierr)
       call mpi_barrier(mycomm,mpierr)
 
-      pstep = 0
       if (isread /= 0) then
         if (myid == 0 ) then
           print*, "read chym restart data"
@@ -344,7 +346,7 @@
     call nio_check(nf90_put_att(chymout%ncid, chymout%varid(3),       &
                    'units', timeunit),115)
     call nio_check(nf90_put_att(chymout%ncid,chymout%varid(3),        &
-         'calendar',trim(calendario)),116)
+         'calendar',trim(calendar)),116)
 !
 !-----------------------------------------------------------------------
 !     Define variables
@@ -384,221 +386,7 @@
       iostep = 0
    end subroutine createfile
 
-
-      subroutine out_init()
-!
-!-----------------------------------------------------------------------
-!     Used module declarations
-!-----------------------------------------------------------------------
-!
-      use netcdf
-!
-      implicit none
-!
-!-----------------------------------------------------------------------
-!     Local variable declarations
-!-----------------------------------------------------------------------
-!
-      character(len=100) :: str
-      chunksizes(1) = nlon/5
-      chunksizes(2) = nlat/5
-      chunksizes(3) = 1
-!
-!-----------------------------------------------------------------------
-!     Create netCDF file
-!-----------------------------------------------------------------------
-!
-      if (.not. allocated(chymout%dimid)) allocate(chymout%dimid(3))
-      if (.not. allocated(chymout%varid)) allocate(chymout%varid(4))
-!
-      call nio_check(nf90_create(trim(chym_output), nf90_netcdf4,    &
-                                  chymout%ncid))
-!
-!-----------------------------------------------------------------------
-!     Define dimensions
-!-----------------------------------------------------------------------
-!
-      call nio_check(nf90_def_dim(chymout%ncid, 'lon',                  &
-                                  nlc, chymout%dimid(1)))
-      call nio_check(nf90_def_dim(chymout%ncid, 'lat',                  &
-                                  nbc, chymout%dimid(2)))
-      call nio_check(nf90_def_dim(chymout%ncid, 'time',                 &
-                                  nf90_unlimited, chymout%dimid(3)))
-!
-!-----------------------------------------------------------------------
-!     Define dimension variables
-!-----------------------------------------------------------------------
-!
-      call nio_check(nf90_def_var(chymout%ncid, 'lon', nf90_real,       &
-                     chymout%dimid(1:2), chymout%varid(1)))
-      call nio_check(nf90_put_att(chymout%ncid, chymout%varid(1),       &
-                     'long_name', 'Longitude'))
-      call nio_check(nf90_put_att(chymout%ncid, chymout%varid(1),       &
-                     'units', 'degrees_east'))
-!
-      call nio_check(nf90_def_var(chymout%ncid, 'lat', nf90_real,       &
-                     chymout%dimid(1:2), chymout%varid(2)))
-      call nio_check(nf90_put_att(chymout%ncid, chymout%varid(2),       &
-                     'long_name', 'Latitude'))
-      call nio_check(nf90_put_att(chymout%ncid, chymout%varid(2),       &
-                     'units', 'degrees_north'))
-!
-      call nio_check(nf90_def_var(chymout%ncid, 'time', nf90_int,       &
-                     chymout%dimid(3), chymout%varid(3)))
-      call nio_check(nf90_put_att(chymout%ncid, chymout%varid(3),       &
-                     'long_name', 'Time'))
-      write(str,fmt='("days since ",I4,"-",I2.2,"-",I2.2," 00:00:00")') &
-           jahr1, jahr2, jahr3
-      call nio_check(nf90_put_att(chymout%ncid, chymout%varid(3),       &
-                     'units', str))
-      call nio_check(nf90_put_att(chymout%ncid,chymout%varid(3),        &
-           'calendar','360_day'))
-!
-!-----------------------------------------------------------------------
-!     Define variables
-!-----------------------------------------------------------------------
-!
-      call nio_check(nf90_def_var(chymout%ncid, 'dis', nf90_float,      &
-                     chymout%dimid, chymout%varid(4)))
-      call nio_check(nf90_def_var_deflate(chymout%ncid,chymout%varid(4),&
-           1,1,1))
-      call nio_check(nf90_def_var_chunking(chymout%ncid,                &
-           chymout%varid(4),0, chunksizes))
-      call nio_check(nf90_put_att(chymout%ncid, chymout%varid(4),       &
-                     'long_name', 'River Discharge'))
-      call nio_check(nf90_put_att(chymout%ncid, chymout%varid(4),       &
-                     'missing_value', 1.0e+36))
-      call nio_check(nf90_put_att(chymout%ncid, chymout%varid(4),       &
-                     'coordinates', "lat lon"))
-!
-!-----------------------------------------------------------------------
-!     Exit define mode
-!-----------------------------------------------------------------------
-!
-      call nio_check(nf90_enddef(chymout%ncid))
-!
-!-----------------------------------------------------------------------
-!     Fill coordinate variables
-!-----------------------------------------------------------------------
-!
-      call nio_check(nf90_put_var(chymout%ncid, chymout%varid(1), chym_lon))
-      call nio_check(nf90_put_var(chymout%ncid, chymout%varid(2), chym_lat))
-!
-!-----------------------------------------------------------------------
-!     Sync file
-!-----------------------------------------------------------------------
-!
-      call nio_check(nf90_sync(chymout%ncid))
-      end subroutine out_init
-
-      subroutine qmax_init()
-!
-!-----------------------------------------------------------------------
-!     Used module declarations
-!-----------------------------------------------------------------------
-!
-      use netcdf
-!
-      implicit none
-!
-!-----------------------------------------------------------------------
-!     Local variable declarations
-!-----------------------------------------------------------------------
-!
-      character(len=100) :: str
-      chunksizes(1) = nlon/5
-      chunksizes(2) = nlat/5
-      chunksizes(3) = 1
-!
-!-----------------------------------------------------------------------
-!     Create netCDF file
-!-----------------------------------------------------------------------
-!
-      if (.not. allocated(chymqmax%dimid)) allocate(chymqmax%dimid(3))
-      if (.not. allocated(chymqmax%varid)) allocate(chymqmax%varid(4))
-!
-      call nio_check(nf90_create(trim(chym_qmax), nf90_netcdf4,    &
-                                  chymqmax%ncid))
-!
-!-----------------------------------------------------------------------
-!     Define dimensions
-!-----------------------------------------------------------------------
-!
-      call nio_check(nf90_def_dim(chymqmax%ncid, 'lon',                  &
-                                  nlc, chymqmax%dimid(1)))
-      call nio_check(nf90_def_dim(chymqmax%ncid, 'lat',                  &
-                                  nbc, chymqmax%dimid(2)))
-      call nio_check(nf90_def_dim(chymqmax%ncid, 'time',                 &
-                                  nf90_unlimited, chymqmax%dimid(3)))
-!
-!-----------------------------------------------------------------------
-!     Define dimension variables
-!-----------------------------------------------------------------------
-!
-      call nio_check(nf90_def_var(chymqmax%ncid, 'lon', nf90_real,       &
-                     chymqmax%dimid(1:2), chymqmax%varid(1)))
-      call nio_check(nf90_put_att(chymqmax%ncid, chymqmax%varid(1),       &
-                     'long_name', 'Longitude'))
-      call nio_check(nf90_put_att(chymqmax%ncid, chymqmax%varid(1),       &
-                     'units', 'degrees_east'))
-!
-      call nio_check(nf90_def_var(chymqmax%ncid, 'lat', nf90_real,       &
-                     chymqmax%dimid(1:2), chymqmax%varid(2)))
-      call nio_check(nf90_put_att(chymqmax%ncid, chymqmax%varid(2),       &
-                     'long_name', 'Latitude'))
-      call nio_check(nf90_put_att(chymqmax%ncid, chymqmax%varid(2),       &
-                     'units', 'degrees_north'))
-!
-      call nio_check(nf90_def_var(chymqmax%ncid, 'time', nf90_int,       &
-                     chymqmax%dimid(3), chymqmax%varid(3)))
-      call nio_check(nf90_put_att(chymqmax%ncid, chymqmax%varid(3),       &
-                     'long_name', 'Time'))
-      write(str,fmt='("years since ",I4,"-",I2.2,"-",I2.2," 00:00:00")') &
-           jahr1, jahr2, jahr3
-      call nio_check(nf90_put_att(chymqmax%ncid, chymqmax%varid(3),       &
-                     'units', str))
-      call nio_check(nf90_put_att(chymqmax%ncid,chymqmax%varid(3),        &
-           'calendar','360_day'))
-!
-!-----------------------------------------------------------------------
-!     Define variables
-!-----------------------------------------------------------------------
-!
-      call nio_check(nf90_def_var(chymqmax%ncid, 'qmax', nf90_real,       &
-                     chymqmax%dimid, chymqmax%varid(4)))
-      call nio_check(nf90_def_var_deflate(chymqmax%ncid,chymqmax%varid(4),&
-           1,1,1))
-      call nio_check(nf90_def_var_chunking(chymqmax%ncid,                &
-           chymqmax%varid(4),0, chunksizes))
-      call nio_check(nf90_put_att(chymqmax%ncid, chymqmax%varid(4),      &
-                     'long_name', 'River Qmax'))
-      call nio_check(nf90_put_att(chymqmax%ncid, chymqmax%varid(4),      &
-                     'missing_value', 1.0e20))
-      call nio_check(nf90_put_att(chymqmax%ncid, chymqmax%varid(4),      &
-                     'coordinates', "lat lon"))
-!
-!-----------------------------------------------------------------------
-!     Exit define mode
-!-----------------------------------------------------------------------
-!
-      call nio_check(nf90_enddef(chymqmax%ncid))
-!
-!-----------------------------------------------------------------------
-!     Fill coordinate variables
-!-----------------------------------------------------------------------
-!
-      call nio_check(nf90_put_var(chymqmax%ncid, chymqmax%varid(1), chym_lon))
-      call nio_check(nf90_put_var(chymqmax%ncid, chymqmax%varid(2), chym_lat))
-!
-!-----------------------------------------------------------------------
-!     Sync file
-!-----------------------------------------------------------------------
-!
-      call nio_check(nf90_sync(chymqmax%ncid))
-!
-      end subroutine qmax_init
-
-      subroutine createfile_qmax(restname,ncdata)
+   subroutine createfile_qmax(restname,ncdata)
 !
 !-----------------------------------------------------------------------
 !     Used module declarations
@@ -700,7 +488,7 @@
     call nio_check(nf90_put_att(chymqmax%ncid, chymqmax%varid(3),       &
                    'units', timeunit))
     call nio_check(nf90_put_att(chymqmax%ncid,chymqmax%varid(3),        &
-         'calendar',trim(calendario)))
+         'calendar',trim(calendar)))
 
 !
 !-----------------------------------------------------------------------
@@ -844,7 +632,7 @@
     call nio_check(nf90_put_att(chymrst%ncid, chymrst%varid(3),       &
                    'units', timeunit))
     call nio_check(nf90_put_att(chymrst%ncid,chymrst%varid(3),        &
-         'calendar',trim(calendario)))
+         'calendar',trim(calendar)))
 
 !
 !-----------------------------------------------------------------------
@@ -912,8 +700,8 @@
 
     call gmafromindex(time,ora,giorno,mese,anno)
     if ( first ) then
-       read(tsdate(5:6),'(i2)') mm
-       read(tsdate(1:4),'(i4)') yy
+       mm = mese
+       yy = anno
        oldmese = mese
        first = .false.
     end if
@@ -930,9 +718,9 @@
       end if
       call closefile(chymout%ncid)
       write (mess,'(15x,a,a)') 'Creating new output file:  '// &
-         trim(sim_name),'_'//trim(cfl)//'.nc'
+         trim(tdnsim),'_'//trim(cfl)//'.nc'
       write (6,'(a)') mess(1:len_trim(mess))
-      call createfile(trim(sim_name)//'_'//trim(cfl)//'.nc',time)
+      call createfile(trim(tdnsim)//'_'//trim(cfl)//'.nc',time)
     end if
     oldmese = mese
     return
@@ -952,8 +740,8 @@
 
     call gmafromindex(time,ora,giorno,mese,anno)
     if ( first ) then
-       read(tsdate(5:6),'(i2)') mm
-       read(tsdate(1:4),'(i4)') yy
+       mm = mese
+       yy = anno
        if ( itype == 1 ) then
          old = anno
        else
@@ -975,9 +763,9 @@
       end if
       write(cfl,'(i0.4,i0.2,a)') yy,mm,'0100'
       write (mess,'(15x,a,a)') 'Creating new Restart file:  '// &
-         trim(sim_name),'_'//trim(cfl)//'_rst.nc'
+         trim(tdnsim),'_'//trim(cfl)//'_rst.nc'
       write (6,'(a)') mess(1:len_trim(mess))
-      call createfile_rst(trim(sim_name)//'_'//trim(cfl)//'_rst.nc',time)
+      call createfile_rst(trim(tdnsim)//'_'//trim(cfl)//'_rst.nc',time)
       call add_timestep(chymrst%ncid,chymrst%varid(3),irstep)
       call write_dynvar(chymrst%ncid,chymrst%varid(4),port,irstep)
       call write_dynvar(chymrst%ncid,chymrst%varid(5),h2o,irstep)
@@ -1004,8 +792,8 @@
 
     call gmafromindex(time,ora,giorno,mese,anno)
     if ( first ) then
-       read(tsdate(5:6),'(i2)') mm
-       read(tsdate(1:4),'(i4)') yy
+       mm = mese
+       yy = anno
        oldanno = anno
        first = .false.
     end if
@@ -1013,9 +801,9 @@
       yy = yy + 1
       write(cfl,'(i4,a)') yy-1,'000100'
       write (mess,'(15x,a,a)') 'Creating new Qmax file:  '// &
-         trim(sim_name),'_'//trim(cfl)//'_qmax.nc'
+         trim(tdnsim),'_'//trim(cfl)//'_qmax.nc'
       write (6,'(a)') mess(1:len_trim(mess))
-      call createfile_qmax(trim(sim_name)//'_'//trim(cfl)//'_qmax.nc',time)
+      call createfile_qmax(trim(tdnsim)//'_'//trim(cfl)//'_qmax.nc',time)
       call add_timestep(chymqmax%ncid,chymqmax%varid(3),iqstep)
       call write_dynvar(chymqmax%ncid,chymqmax%varid(4),port_qmaxs,iqstep)
       call closefile(chymqmax%ncid)
@@ -1025,65 +813,7 @@
     return
   end subroutine createnc3
 
-
-
-      subroutine chym_rst(istep)
-!
-!-----------------------------------------------------------------------
-!     Used module declarations
-!-----------------------------------------------------------------------
-!
-      use netcdf
-!
-      implicit none
-!
-!-----------------------------------------------------------------------
-!     Imported variable declarations
-!-----------------------------------------------------------------------
-!
-      integer, intent(in) :: istep
-!
-!-----------------------------------------------------------------------
-!     Local variable declarations
-!-----------------------------------------------------------------------
-!
-      integer :: start(4), count(4), len
-!
-!-----------------------------------------------------------------------
-!     Write data to file
-!-----------------------------------------------------------------------
-!
-      call nio_check(nf90_inquire_dimension(chymrst%ncid,               &
-                     chymrst%dimid(3), len=len))
-      start = (/ len+1, 1, 1, 1 /)
-      count = (/ 1, 1, 1, 1 /)
-      call nio_check(nf90_put_var(chymrst%ncid, chymrst%varid(3),       &
-                    (/ istep-1 /), start, count))
-!
-      start = (/ 1, 1, len+1, 1 /)
-      count = (/ nlc, nbc, 1, 1 /)
-      call nio_check(nf90_put_var(chymrst%ncid, chymrst%varid(4),       &
-                       port, start, count))
-!
-      start = (/ 1, 1, len+1, 1 /)
-      count = (/ nlc, nbc, 1, 1 /)
-      call nio_check(nf90_put_var(chymrst%ncid, chymrst%varid(5),       &
-                       h2o, start, count))
-!
-!-----------------------------------------------------------------------
-!     Sync file
-!-----------------------------------------------------------------------
-!
-      call nio_check(nf90_sync(chymrst%ncid))
-!
-!-----------------------------------------------------------------------
-!     Close file
-!-----------------------------------------------------------------------
-!
-      if (istep == nstep) call nio_check(nf90_close(chymrst%ncid))
-!
-      end subroutine chym_rst
-      subroutine chym_inifile()
+  subroutine chym_inifile()
 !
 !-----------------------------------------------------------------------
 !     Used module declarations
@@ -1097,13 +827,13 @@
 !     Local variable declarations
 !-----------------------------------------------------------------------
 !
-      integer :: ncid, varid, start(4), count(4)
+      integer :: ncid, pstep, varid, start(4), count(4)
 !
 !-----------------------------------------------------------------------
 !     Open netCDF file
 !-----------------------------------------------------------------------
 !
-      call nio_check(nf90_open(trim(chym_initial), nf90_nowrite, ncid))
+      call nio_check(nf90_open(trim(tdnini), nf90_nowrite, ncid))
 !
 !-----------------------------------------------------------------------
 !     Read variables
@@ -1123,7 +853,6 @@
 !
       call nio_check(nf90_inq_varid(ncid, 'time', varid))
       call nio_check(nf90_get_var(ncid, varid, pstep))
-      pstep = pstep+1
 !
 !-----------------------------------------------------------------------
 !     Close file
@@ -1152,7 +881,7 @@
         print*,"We are going to read step : ",stepr," of chym_runoff"
         if (first) then
           oldyear=year
-          write(filerunoff,'(a,i4,a)') trim(filemrro)//'_',oldyear, &
+          write(filerunoff,'(a,i4,a)') trim(tdninp)//'_',oldyear, &
               '.nc'
           print*,"we are opening file: ", trim(filerunoff)
           call nio_check(nf90_open(trim(filerunoff),                     &
@@ -1170,114 +899,6 @@
       call mpi_bcast(chym_runoff(1,1),nbc*nlc,MPI_REAL,0,mycomm,mpierr)
 
       end subroutine read_runoff
-
-      subroutine chym_out(istep)
-!
-!-----------------------------------------------------------------------
-!     Used module declarations
-!-----------------------------------------------------------------------
-!
-      use netcdf
-!
-      implicit none
-!
-!-----------------------------------------------------------------------
-!     Imported variable declarations
-!-----------------------------------------------------------------------
-!
-      integer, intent(in) :: istep
-!
-!-----------------------------------------------------------------------
-!     Local variable declarations
-!-----------------------------------------------------------------------
-!
-      integer :: len, start(4), count(4)
-!
-!-----------------------------------------------------------------------
-!     Write data to file
-!-----------------------------------------------------------------------
-!
-      call nio_check(nf90_inquire_dimension(chymout%ncid,               &
-                     chymout%dimid(3), len=len))
-!
-      start = (/ len+1, 1, 1, 1 /)
-      count = (/ 1, 1, 1, 1 /)
-      call nio_check(nf90_put_var(chymout%ncid, chymout%varid(3),       &
-                    (/ istep-1 /), start, count))
-!
-      start = (/ 1, 1, len+1, 1 /)
-      count = (/ nlc, nbc, 1, 1 /)
-      call nio_check(nf90_put_var(chymout%ncid, chymout%varid(4),       &
-                     port_out, start, count))
-!
-!-----------------------------------------------------------------------
-!     Sync file
-!-----------------------------------------------------------------------
-!
-      call nio_check(nf90_sync(chymout%ncid))
-!
-!-----------------------------------------------------------------------
-!     Close file
-!-----------------------------------------------------------------------
-!
-      if (istep == nstep) call nio_check(nf90_close(chymout%ncid))
-!
-      end subroutine chym_out
-
-      subroutine chym_wqmax(istep)
-!
-!-----------------------------------------------------------------------
-!     Used module declarations
-!-----------------------------------------------------------------------
-!
-      use netcdf
-!
-      implicit none
-!
-!-----------------------------------------------------------------------
-!     Imported variable declarations
-!-----------------------------------------------------------------------
-!
-      integer, intent(in) :: istep
-!
-!-----------------------------------------------------------------------
-!     Local variable declarations
-!-----------------------------------------------------------------------
-!
-      integer :: len, start(4), count(4)
-!
-!-----------------------------------------------------------------------
-!     Write data to file
-!-----------------------------------------------------------------------
-!
-      call nio_check(nf90_inquire_dimension(chymqmax%ncid,               &
-                     chymqmax%dimid(3), len=len))
-!
-      start = (/ len+1, 1, 1, 1 /)
-      count = (/ 1, 1, 1, 1 /)
-      call nio_check(nf90_put_var(chymqmax%ncid, chymqmax%varid(3),       &
-                    (/ istep-1 /), start, count))
-!
-      start = (/ 1, 1, len+1, 1 /)
-      count = (/ nlc, nbc, 1, 1 /)
-      call nio_check(nf90_put_var(chymqmax%ncid, chymqmax%varid(4),       &
-                     port_qmaxs, start, count))
-!
-!-----------------------------------------------------------------------
-!     Sync file
-!-----------------------------------------------------------------------
-!
-      call nio_check(nf90_sync(chymqmax%ncid))
-!
-!-----------------------------------------------------------------------
-!     Close file
-!-----------------------------------------------------------------------
-!
-      if (istep == nstep) call nio_check(nf90_close(chymqmax%ncid))
-!
-      end subroutine chym_wqmax
-
-!
 
       subroutine read_rec(ifile, key, value, pname)
       implicit none

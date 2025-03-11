@@ -42,6 +42,7 @@ module mod_iface
       integer :: displacem
       integer :: is,js,ks
       character(len=256) :: namelistfile
+      character(len=10) :: tsdate
 
       call getarg(1, namelistfile)
 
@@ -196,18 +197,15 @@ module mod_iface
         time=sdate
         write(tsdate,'(i0.10)') sdate
         call gmafromindex(time,hour,day,month,year)
-        write(filename,'(a,a)') trim(sim_name)//'_',trim(tsdate)// &
+        write(filename,'(a,a)') trim(tdnsim)//'_',trim(tsdate)// &
             '.nc'
-        write(filenamerst,'(a,a)') trim(sim_name)//'_',trim(tsdate)// &
+        write(filenamerst,'(a,a)') trim(tdnsim)//'_',trim(tsdate)// &
             '_rst.nc'
-        write(filenameqmax,'(a,a)') trim(sim_name)//'_',trim(tsdate)// &
+        write(filenameqmax,'(a,a)') trim(tdnsim)//'_',trim(tsdate)// &
             '_qmax.nc'
         print*,"Create output file"
         call createfile(trim(filename),time)
         print*,"End creation output file"
-
-        if (iswrit /= 0) then
-        end if
 
       end if
       do js=2,nbc-1
@@ -223,34 +221,19 @@ module mod_iface
     end subroutine chym_init
 
 
-    subroutine chym_run(istart, iend)
+    subroutine chym_run
       implicit none
-!
-!-----------------------------------------------------------------------
-!     Imported variable declarations
-!-----------------------------------------------------------------------
-!
-      integer, intent(in) :: istart
-      integer, intent(in) :: iend
 !
 !-----------------------------------------------------------------------
 !     Local variable declarations
 !-----------------------------------------------------------------------
 !
-
-      integer :: t,i,j, istep, icount
+      integer :: t,i,j
       integer :: iv,k
       character(len=80) :: string, now
-      istep = 0
-      icount = 0
-      if ( myid == 0 ) then
-        if (isread /= 0 .and. iswrit /= 0) then
-          icount = mod(istart, iswrit)
-        else
-          icount = 0
-        end if
-      end if
+
       hourstep = 0
+      chym_runoff = 0.0
 
       do while (time <= edate)
 
@@ -264,9 +247,6 @@ module mod_iface
           write (6,'(a)') string(1:len_trim(string))
           call gmafromindex(time,hour,day,month,year)
           call dataorafromday (hour,day,month,year,now)
-        end if
-        if (istep == 1) then
-          chym_runoff = 0.0
         end if
         call read_runoff(hourstep/dstep+inirun)
         do j=1,nbc
@@ -293,7 +273,7 @@ module mod_iface
         deltat = (3600.0*dstep)/real(step)
         do i = 1, step
           wkm1_sub=0.0
-          call chymmodel(istep,chym_runoff,month,day)
+          call chymmodel(chym_runoff,month,day)
         enddo
         iv = 1
         do i=ide1,ide2
@@ -328,8 +308,8 @@ module mod_iface
 !-----------------------------------------------------------------------
 !
         if (myid == 0 ) then
-          if (iswrit /= 0) then
-            call createnc2(hourstep,2)
+          if (iorstfreq /= 0) then
+            call createnc2(hourstep,iorstfreq)
           end if
         end if
 !-----------------------------------------------------------------------

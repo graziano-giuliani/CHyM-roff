@@ -5,25 +5,24 @@ module mod_param
   real, parameter :: chym_acella = 6307.744**2
   real :: convfac = 1.0  ! for mm/s, kg/m^2/s. Set to 1/3.6 for m/h
   integer :: iostep , irstep , iqstep, ivar , rvar , qvar
-  integer :: nlc,nbc,step,nstep,nlon,nlat
-  integer :: inirun,yday,time,oldyear, ical
+  integer :: nlc,nbc,nlon,nlat
+  integer :: inirun,step,yday,time,oldyear, ical
   integer :: hourstep, sdate, edate ,dstep
   integer :: hour,day,month,year,now
   integer , dimension(12) :: mesi
   data mesi/31 , 28 , 31 , 30 , 31 , 30 , 31 , 31 , 30 , 31 , 30 , 31/
-  character(len=256) :: filestatic,filemrro,chym_output
-  character(len=256) :: chym_restart,chym_initial,tdate
-  character(len=256) :: chym_qmax,tsdate,sim_name,calendario
+  character(len=256) :: tdnstk,tdninp
+  character(len=256) :: tdnini,tdnsim
+  character(len=32) :: calendar
   character(len=256) :: filename,filenamerst,filenameqmax
   integer :: jahr1, jahr2, jahr3, jahr4
-  integer :: isread, iswrit
+  integer :: isread, iorstfreq
   integer, parameter :: lu = 11
 
   integer ir(9),jr(9)
   data ir /-1, 0, 1, 1, 1, 0,-1,-1,0/
   data jr / 1, 1, 1, 0,-1,-1,-1, 0,0/
 
-  integer :: pstep
   real :: deltat
 
   ! area of the chym grid cells

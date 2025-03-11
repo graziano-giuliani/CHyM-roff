@@ -1,0 +1,27 @@
+&iniparam
+ convfac = .000277777777, ! conversion factor from input data units to mm/s
+/
+
+&inputparam
+ isread = 0,   ! 0 = initial run (no restart)
+               ! 1 = read model restart file
+ inirun = 0,   ! Initial step in the input data file fmodel or runoff
+ dstep = 24,   ! Input runoff data timestep in hours
+ step  = 300,  ! Model steps per each input timestep
+ tdninp = 'input/runoff', ! Input file directory and prefix
+ tdnini = 'output/med_rst.nc',
+ tdnstk = 'chym_stk.nc',
+/
+
+&outparam
+ iorstfreq = 2,         ! 0 = no restart files
+                        ! 1 = yearly restart files
+                        ! 2 = monthly restart files
+ tdnsim = 'output/med', ! Output file directory and prefix
+/
+
+&timeparam
+ sdate = 1977010100, ! Start date in YYYYMMDDHH
+ edate = 1983123100, ! Start date in YYYYMMDDHH
+ calendar = 'gregorian',
+/

@@ -11,10 +11,10 @@ module mod_model
 
   contains
 
-    subroutine chymmodel(istep, chym_runoff,imon,iday)
+    subroutine chymmodel(chym_runoff,imon,iday)
       implicit none
-      integer, intent(in) :: istep, imon, iday
       real, intent(in) :: chym_runoff(:,:)
+      integer, intent(in) :: imon, iday
       real :: tmp
       logical :: first
       data first /.true./

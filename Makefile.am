@@ -28,9 +28,9 @@ endif
 ## FCFLAGS += -I. `nf-config --fflags`
 FCFLAGS += -I. $(NC_INCLUDES)
 
-bin_PROGRAMS = main
+bin_PROGRAMS = chymroff
 
-main_SOURCES = mod_param.F90 \
+chymroff_SOURCES = mod_param.F90 \
       mod_time.f90    \
       mod_io.f90    \
       mod_model.F90 \
