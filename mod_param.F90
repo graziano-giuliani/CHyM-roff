@@ -37,8 +37,7 @@ module mod_param
   real, allocatable :: bwet_sub(:,:)
   real, allocatable :: wkm1_sub(:,:)
   real, allocatable :: port(:,:)
-  integer, allocatable :: port_out(:,:)
-  real, allocatable :: port_outs(:,:)
+  real, allocatable :: port_out(:,:)
   real, allocatable :: port_qmaxs(:,:)
   real, allocatable :: wkm1(:,:)
   real, allocatable :: bwet(:,:)
@@ -68,17 +67,31 @@ module mod_param
   real, allocatable :: chym_dx(:,:)
   ! CHyM lat
   real, allocatable :: chym_lat(:,:)
+  real, allocatable :: corner_lat(:,:,:)
   ! CHyM lon
   real, allocatable :: chym_lon(:,:)
+  real, allocatable :: corner_lon(:,:,:)
 
   real, allocatable :: chym_runoff(:,:)
 
   integer, parameter :: lntypes = 110
-  integer, parameter :: mare = 15
-  integer, parameter :: lago = 14
+  integer, parameter :: ocean = 15
+  integer, parameter :: lake = 14
   integer , dimension(3) :: chunksizes
-  real,parameter :: scale_factor=0.00011641532188114492
-  real,parameter :: add_offset=250000
+
+#ifdef NILE
+  real, parameter, dimension(12) :: nile_fresh_flux = &
+      [ 336,  396,  407,  399,  472,  615,  &
+        634,  557,  412,  373,  372,  352]
+  integer :: idamietta = -1
+  integer :: jdamietta = -1
+  integer :: irosetta = -1
+  integer :: jrosetta = -1
+  real , parameter :: lat_damietta = 31.52
+  real , parameter :: lon_damietta = 31.83
+  real , parameter :: lat_rosetta = 31.46
+  real , parameter :: lon_rosetta = 30.36
+#endif
 
 !
 !-----------------------------------------------------------------------
@@ -92,5 +105,47 @@ module mod_param
   end type CHyM_IO
 !
   type(CHyM_IO) :: chymout, chymrst, chymqmax
+
+  contains
+
+  logical function is_inbox(lat,lon,clat,clon)
+    implicit none
+    real, intent(in) :: lat, lon
+    real, dimension(4), intent(in) :: clat, clon
+    real :: m1, b1, m2, b2, m3, b3, m4, b4
+    logical :: l1, l2, l3, l4
+    is_inbox = .false.
+
+    ! ASSUME NON PATOLOGICAL CASES, i.e. clon, clat proper quadrilater.
+    if ( clat(1) /= clat(2) ) then
+      m1 = (clat(1)-clat(2))/(clon(1)-clon(2))
+      b1 = (clon(1)*clat(2)-clon(2)*clat(1))/(clon(1)-clon(2))
+      l1 = (lat > m1*lon+b1)
+    else
+      l1 = lat > clat(1)
+    end if
+    if ( clat(3) /= clat(4) ) then
+      m2 = (clat(3)-clat(4))/(clon(3)-clon(4))
+      b2 = (clon(3)*clat(4)-clon(4)*clat(3))/(clon(3)-clon(4))
+      l2 = lat < m2*lon+b2
+    else
+      l2 = lat < clat(3)
+    end if
+    if ( clon(1) /= clon(4) ) then
+      m3 = (clon(1)-clon(4))/(clat(1)-clat(4))
+      b3 = (clat(1)*clon(4)-clat(4)*clon(1))/(clat(1)-clat(4))
+      l3 = lon > m3*lat+b3
+    else
+      l3 = lon > clon(1)
+    end if
+    if ( clon(2) /= clon(3) ) then
+      m4 = (clon(2)-clon(3))/(clat(2)-clat(3))
+      b4 = (clat(2)*clon(3)-clat(3)*clon(2))/(clat(2)-clat(3))
+      l4 = lon < m4*lat+b4
+    else
+      l4 = lon < clon(3)
+    end if
+    is_inbox = l1 .and. l2 .and. l3 .and. l4
+  end function is_inbox
 
 end module mod_param

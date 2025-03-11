@@ -158,7 +158,6 @@
       if (.not. allocated(luse)) allocate(luse(nlc,nbc))
       if (.not. allocated(port)) allocate(port(nlc,nbc))
       if (.not. allocated(port_out)) allocate(port_out(nlc,nbc))
-      if (.not. allocated(port_outs)) allocate(port_outs(nlc,nbc))
       if (.not. allocated(port_qmaxs)) allocate(port_qmaxs(nlc,nbc))
       if (.not. allocated(wkm1)) allocate(wkm1(nlc,nbc))
       if (.not. allocated(bwet)) allocate(bwet(nlc,nbc))
@@ -174,6 +173,8 @@
       if (.not. allocated(chym_dx)) allocate(chym_dx(nlc,nbc))
       if (.not. allocated(chym_lat)) allocate(chym_lat(nlc,nbc))
       if (.not. allocated(chym_lon)) allocate(chym_lon(nlc,nbc))
+      if (.not. allocated(corner_lon)) allocate(corner_lon(4,nlc,nbc))
+      if (.not. allocated(corner_lat)) allocate(corner_lat(4,nlc,nbc))
       if (.not. allocated(manning)) allocate(manning(lntypes))
 
       port = 0
@@ -190,10 +191,16 @@
         call nio_check(nf90_get_var(ncid, varid, manning),1)
 
         call nio_check(nf90_inq_varid(ncid, 'lon', varid),2)
-        call nio_check(nf90_get_var(ncid, varid, chym_lon(:,:)),3)
+        call nio_check(nf90_get_var(ncid, varid, chym_lon),3)
+
+        call nio_check(nf90_inq_varid(ncid, 'corner_lon', varid),2)
+        call nio_check(nf90_get_var(ncid, varid, corner_lon),3)
 
         call nio_check(nf90_inq_varid(ncid, 'lat', varid),4)
-        call nio_check(nf90_get_var(ncid, varid, chym_lat(:,:)),5)
+        call nio_check(nf90_get_var(ncid, varid, chym_lat),5)
+
+        call nio_check(nf90_inq_varid(ncid, 'corner_lat', varid),4)
+        call nio_check(nf90_get_var(ncid, varid, corner_lat),5)
 
         call nio_check(nf90_inq_varid(ncid, 'fdm', varid),6)
         call nio_check(nf90_get_var(ncid, varid, fmap(:,:)),7)
@@ -223,6 +230,8 @@
       call mpi_bcast(manning,lntypes,MPI_REAL, 0,mycomm,mpierr)
       call mpi_bcast(chym_lon,nbc*nlc,MPI_REAL, 0,mycomm,mpierr)
       call mpi_bcast(chym_lat,nbc*nlc,MPI_REAL, 0,mycomm,mpierr)
+      call mpi_bcast(corner_lat,4*nbc*nlc,MPI_REAL, 0,mycomm,mpierr)
+      call mpi_bcast(corner_lon,4*nbc*nlc,MPI_REAL, 0,mycomm,mpierr)
       call mpi_bcast(fmap,nbc*nlc,MPI_REAL, 0,mycomm,mpierr)
       call mpi_bcast(accl,nbc*nlc,MPI_REAL, 0,mycomm,mpierr)
       call mpi_bcast(luse,nbc*nlc,MPI_INT, 0,mycomm,mpierr)
@@ -341,8 +350,6 @@
 !     Define variables
 !-----------------------------------------------------------------------
 !
-      !call nio_check(nf90_def_var(chymout%ncid, 'dis', nf90_int,       &
-      !               chymout%dimid, chymout%varid(4)),117)
       call nio_check(nf90_def_var(chymout%ncid, 'dis', nf90_float,      &
                      chymout%dimid, chymout%varid(4)),117)
       call nio_check(nf90_def_var_deflate(chymout%ncid,chymout%varid(4),&
@@ -355,12 +362,6 @@
                      'missing_value', 1.0e+36),121)
       call nio_check(nf90_put_att(chymout%ncid, chymout%varid(4),       &
                      'coordinates', "lat lon"))
-      !call nio_check(nf90_put_att(chymout%ncid, chymout%varid(4),       &
-      !               'missing_value', 2147483647),121)
-      !call nio_check(nf90_put_att(chymout%ncid, chymout%varid(4),       &
-      !               'scale_factor', 0.00011641532188114492),122)
-      !call nio_check(nf90_put_att(chymout%ncid, chymout%varid(4),       &
-      !               'add_offset', 250000),123)
 !
 !-----------------------------------------------------------------------
 !     Exit define mode
@@ -457,8 +458,6 @@
 !     Define variables
 !-----------------------------------------------------------------------
 !
-      !call nio_check(nf90_def_var(chymout%ncid, 'dis', nf90_int,       &
-      !               chymout%dimid, chymout%varid(4)))
       call nio_check(nf90_def_var(chymout%ncid, 'dis', nf90_float,      &
                      chymout%dimid, chymout%varid(4)))
       call nio_check(nf90_def_var_deflate(chymout%ncid,chymout%varid(4),&
@@ -471,12 +470,6 @@
                      'missing_value', 1.0e+36))
       call nio_check(nf90_put_att(chymout%ncid, chymout%varid(4),       &
                      'coordinates', "lat lon"))
-      !call nio_check(nf90_put_att(chymout%ncid, chymout%varid(4),       &
-      !               'missing_value', 2147483647))
-      !call nio_check(nf90_put_att(chymout%ncid, chymout%varid(4),       &
-      !               'scale_factor', 0.00011641532188114492))
-      !call nio_check(nf90_put_att(chymout%ncid, chymout%varid(4),       &
-      !               'add_offset', 250000))
 !
 !-----------------------------------------------------------------------
 !     Exit define mode
@@ -945,29 +938,42 @@
     return
   end subroutine createnc1
 
-  subroutine createnc2(hourstep)
+  subroutine createnc2(hourstep,itype)
     implicit none
+    integer , intent(in) :: hourstep , itype
     integer ora,giorno,mese,anno,yy,mm
-    integer :: oldanno             ! = 01
-    integer , intent(in) :: hourstep
+    integer :: old
     character(len=10) :: cfl
     character(len=256) :: mess
-    logical :: first
+    logical :: first , donow
     data first /.true./
     save first
-    save mm,yy,oldanno
+    save mm,yy,old
 
     call gmafromindex(time,ora,giorno,mese,anno)
     if ( first ) then
        read(tsdate(5:6),'(i2)') mm
        read(tsdate(1:4),'(i4)') yy
-       oldanno = anno
+       if ( itype == 1 ) then
+         old = anno
+       else
+         old = mese
+       end if
        first = .false.
     end if
 
-    if ( anno /= oldanno .and. hourstep > 1 ) then
-      yy = yy + 1
-      write(cfl,'(i4,a)') yy,'010100'
+    if ( itype == 1 ) then
+      donow = anno /= old
+    else
+      donow = mese /= old
+    end if
+    if ( donow .and. hourstep > 1 ) then
+      mm = mm + 1
+      if ( mm == 13 ) then
+        yy = yy + 1
+        mm = 1
+      end if
+      write(cfl,'(i0.4,i0.2,a)') yy,mm,'0100'
       write (mess,'(15x,a,a)') 'Creating new Restart file:  '// &
          trim(sim_name),'_'//trim(cfl)//'_rst.nc'
       write (6,'(a)') mess(1:len_trim(mess))
@@ -976,9 +982,12 @@
       call write_dynvar(chymrst%ncid,chymrst%varid(4),port,irstep)
       call write_dynvar(chymrst%ncid,chymrst%varid(5),h2o,irstep)
       call closefile(chymrst%ncid)
+      if ( itype == 1 ) then
+        old = anno
+      else
+        old = mese
+      end if
     end if
-    oldanno = anno
-    return
   end subroutine createnc2
 
   subroutine createnc3(hourstep)
@@ -1359,12 +1368,14 @@
       end if
 !
       end subroutine nio_check
+
   subroutine closefile(ncid)
     use netcdf
     implicit none
     integer, intent(in) :: ncid
     call nio_check(nf90_close(ncid))
   end subroutine closefile
+
   subroutine add_timestep(ncid,time_varid,istep)
     use netcdf
     implicit none
@@ -1378,6 +1389,7 @@
     call nio_check(nf90_put_var(ncid,time_varid,xtime,istart(1:1), &
            icount(1:1)))
   end subroutine add_timestep
+
   subroutine write_dynvar_real(ncid,vname_id,rval,iistep)
     use netcdf
     implicit none

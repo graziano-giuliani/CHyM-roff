@@ -30,10 +30,10 @@ FCFLAGS += -I. $(NC_INCLUDES)
 
 bin_PROGRAMS = main
 
-main_SOURCES = mod_param.f90 \
+main_SOURCES = mod_param.F90 \
       mod_time.f90    \
       mod_io.f90    \
-      mod_model.f90 \
+      mod_model.F90 \
       mod_iface.f90 \
       mod_global.f90 \
       mod_mpimess.f90 \
@@ -45,6 +45,8 @@ FCLD = $(MPIFC)
 
 %.o: %.f90
 	$(FCLD) $(CPPFLAGS) $(FCFLAGS) -c $<
+%.o: %.F90
+	$(FCLD) $(CPPFLAGS) $(FCFLAGS) -c $<
 
 distclean-local:
 	rm -f *.mod *__genmod.*
@@ -52,11 +54,11 @@ distclean-local:
 clean-local:
 	rm -f *.mod *__genmod.*
 
-mod_param.o: mod_param.f90
+mod_param.o: mod_param.F90
 mod_varandtypes.o: mod_varandtypes.f90
 mod_mpimess.o: mod_mpimess.f90 mod_varandtypes.o
 mod_time.o: mod_time.f90 mod_param.o
 mod_io.o: mod_io.f90 mod_param.o mod_varandtypes.o mod_mpimess.o mod_time.o
-mod_model.o: mod_model.f90 mod_param.o mod_varandtypes.o mod_mpimess.o
+mod_model.o: mod_model.F90 mod_param.o mod_varandtypes.o mod_mpimess.o
 mod_iface.o: mod_iface.f90 mod_param.o mod_io.o mod_model.o mod_varandtypes.o mod_mpimess.o mod_time.o
 main.o: main.f90 mod_param.o mod_iface.o mod_varandtypes.o mod_mpimess.o

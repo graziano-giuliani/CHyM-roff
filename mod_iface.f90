@@ -81,6 +81,12 @@ module mod_iface
         allocate(ide1gbp(nproc), ide2gbp(nproc), jde1gbp(nproc),        &
            jde2gbp(nproc))
         allocate(iypgbp(nproc) , jxpgbp(nproc))
+      else
+        allocate(ide1p(1), ide2p(1), jde1p(1), jde2p(1))
+        allocate(iypp(1) , jxpp(1))
+        allocate(ide1gbp(1), ide2gbp(1), jde1gbp(1),        &
+           jde2gbp(1))
+        allocate(iypgbp(1) , jxpgbp(1))
       end if
       call mpi_reduce(nngb, nngbp, 1, mpi_integer, mpi_sum, 0, mycomm,  &
         mpierr)
@@ -279,15 +285,15 @@ module mod_iface
           do t=1,dstep
             time=increasetime(time)
           end do
-          call gmafromindex(time,hour,day,month,year)
-          call dataorafromday (hour,day,month,year,now)
         end if
         call mpi_bcast(time,nproc,mpi_integer,0,mycomm,mpierr)
+        call gmafromindex(time,hour,day,month,year)
+        call dataorafromday (hour,day,month,year,now)
 
         deltat = (3600.0*dstep)/real(step)
         do i = 1, step
           wkm1_sub=0.0
-          call chymmodel(istep,chym_runoff)
+          call chymmodel(istep,chym_runoff,month,day)
         enddo
         iv = 1
         do i=ide1,ide2
@@ -323,7 +329,7 @@ module mod_iface
 !
         if (myid == 0 ) then
           if (iswrit /= 0) then
-            call createnc2(hourstep)
+            call createnc2(hourstep,2)
           end if
         end if
 !-----------------------------------------------------------------------
@@ -331,19 +337,14 @@ module mod_iface
 !-----------------------------------------------------------------------
 !
         if (myid == 0 ) then
-          port_outs = port
-          where(chym_drai < 50) port_outs = 0
-
-          port_out=int((port_outs-add_offset)/scale_factor)
+          port_out = int(port)
           call add_timestep(chymout%ncid,chymout%varid(3),iostep)
-          !call write_dynvar(chymout%ncid,chymout%varid(4),port_out, &
-          !                  iostep)
-          call write_dynvar(chymout%ncid,chymout%varid(4),port_outs, &
+          call write_dynvar(chymout%ncid,chymout%varid(4),port_out, &
                             iostep)
           do j=2,nbc-1
             do i=2,nlc-1
-              if (port_qmaxs(i,j) < port_outs(i,j)) then
-                port_qmaxs(i,j) = port_outs(i,j)
+              if (port_qmaxs(i,j) < port_out(i,j)) then
+                port_qmaxs(i,j) = port_out(i,j)
               end if
             end do
           end do
@@ -380,13 +381,13 @@ module mod_iface
         do i = 2, nlc-1
           if (chym_lat(i,j) > 50.50407 .and. chym_lat(i,j) < 51.79574   &
               .and. chym_lon(i,j) > 5.7957 .and. chym_lon(i,j) < 7.5957 &
-              .and. luse(i,j) == mare ) then
-              luse(i,j) = lago
+              .and. luse(i,j) == ocean ) then
+              luse(i,j) = lake
           end if
           idir = fmap(i,j)
           land = luse(i,j)
           mann = manning(int(luse(i,j)))
-          if (idir.ge.1.and.idir.le.8.and.land.ne.mare.and.land.gt.0)   &
+          if (idir.ge.1.and.idir.le.8.and.land.ne.ocean.and.land.gt.0)   &
             then
             if (land.gt.lntypes.or.land.le.0) then
               print*,"Error in line: 845   in file: mod_hd_io"

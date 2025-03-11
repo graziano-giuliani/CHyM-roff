@@ -51,6 +51,10 @@ fi
 ##old # FIXME: Replace `main' with a function in `-lnetcdff':
 ##old AC_CHECK_LIB([netcdff], [-lnetcdff])
 
+# Special Nile !
+AM_CPPFLAGS="-DNILE $AM_CPPFLAGS"
+AC_SUBST(AM_CPPFLAGS)
+
 # Checks for header files.
 
 # Checks for typedefs, structures, and compiler characteristics.
