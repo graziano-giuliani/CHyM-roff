@@ -38,7 +38,7 @@ module mod_iface
 
     subroutine chym_init()
       implicit none
-      integer :: i, i1,j1
+      integer :: i, i1, j1
       integer :: displacem
       integer :: is,js,ks
       character(len=256) :: namelistfile
@@ -230,6 +230,9 @@ module mod_iface
 !
       integer :: t,i,j
       integer :: iv,k
+#ifdef RUNOFF
+      integer :: ii, jj, idir
+#endif
       character(len=80) :: string, now
 
       hourstep = 0
@@ -321,6 +324,24 @@ module mod_iface
           call add_timestep(chymout%ncid,chymout%varid(3),iostep)
           call write_dynvar(chymout%ncid,chymout%varid(4),port_out, &
                             iostep)
+#ifdef RUNOFF
+          roff_out = 1000.0*port_out/(chym_area*1.0e6)
+          do j=2,nbc-1
+            do i=2,nlc-1
+              if ( chym_lsm(i,j) > 0.0 ) then
+                idir = fmap(i,j)
+                if ( idir == 0 ) then
+                  call find_nearest_ocean(i,j,ii,jj)
+                  roff_out(ii,jj) = roff_out(i,j)
+                else
+                  roff_out(i+ir(idir),j+jr(idir)) = roff_out(i,j)
+                end if
+              end if
+            end do
+          end do
+          call write_dynvar(chymout%ncid,chymout%varid(5),roff_out, &
+                            iostep)
+#endif
           do j=2,nbc-1
             do i=2,nlc-1
               if (port_qmaxs(i,j) < port_out(i,j)) then

@@ -23,6 +23,8 @@ module mod_param
   data ir /-1, 0, 1, 1, 1, 0,-1,-1,0/
   data jr / 1, 1, 1, 0,-1,-1,-1, 0,0/
 
+  real :: thrriv = 5400.0
+
   real :: deltat
 
   ! area of the chym grid cells
@@ -37,6 +39,7 @@ module mod_param
   real, allocatable :: wkm1_sub(:,:)
   real, allocatable :: port(:,:)
   real, allocatable :: port_out(:,:)
+  real, allocatable :: roff_out(:,:)
   real, allocatable :: port_qmaxs(:,:)
   real, allocatable :: wkm1(:,:)
   real, allocatable :: bwet(:,:)
@@ -147,4 +150,52 @@ module mod_param
     is_inbox = l1 .and. l2 .and. l3 .and. l4
   end function is_inbox
 
+  subroutine find_nearest_land(i,j,ii,jj)
+    implicit none
+    integer, intent(in) :: i, j
+    integer, intent(out) :: ii, jj
+    if ( luse(i,j) /= ocean ) then
+      ii = i
+      jj = j
+    else
+      if ( all(luse(i-1:i+1,j-1:j+1) == ocean) ) then
+        print *, 'No land point found! Will modify landmask!'
+        ii = i
+        jj = j
+        return
+      end if
+      do jj = j-1, j+1
+        do ii = i-1, i+1
+          if ( luse(ii,jj) /= ocean ) then
+            return
+          end if
+        end do
+      end do
+    end if
+  end subroutine find_nearest_land
+
+  subroutine find_nearest_ocean(i,j,ii,jj)
+    implicit none
+    integer, intent(in) :: i, j
+    integer, intent(out) :: ii, jj
+
+    if ( luse(i,j) == ocean ) then
+      ii = i
+      jj = j
+    else
+      if ( all(luse(i-1:i+1,j-1:j+1) /= ocean) ) then
+        print *, 'No ocean point found! Will modify landmask!'
+        ii = i
+        jj = j
+        return
+      end if
+      do jj = j-1, j+1
+        do ii = i-1, i+1
+          if ( luse(ii,jj) == ocean ) then
+            return
+          end if
+        end do
+      end do
+    end if
+  end subroutine find_nearest_ocean
 end module mod_param

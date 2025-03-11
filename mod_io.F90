@@ -58,7 +58,7 @@ module mod_io
       integer :: iretval
       integer :: lun
 
-      namelist /iniparam/ convfac
+      namelist /iniparam/ convfac, thrriv
       namelist /inputparam/ isread, inirun, yday, dstep, step, &
                             tdninp, tdnini, tdnstk
       namelist /outparam/ iorstfreq, tdnsim
@@ -129,6 +129,12 @@ module mod_io
       use netcdf
       implicit none
       integer :: ncid, dimid, varid
+#ifdef RUNOFF
+#ifdef NILE
+      integer :: ii, jj
+#endif
+      integer :: i, j, ilnd, idir
+#endif
 
 !
 !-----------------------------------------------------------------------
@@ -161,6 +167,9 @@ module mod_io
       if (.not. allocated(luse)) allocate(luse(nlc,nbc))
       if (.not. allocated(port)) allocate(port(nlc,nbc))
       if (.not. allocated(port_out)) allocate(port_out(nlc,nbc))
+#ifdef RUNOFF
+      if (.not. allocated(roff_out)) allocate(roff_out(nlc,nbc))
+#endif
       if (.not. allocated(port_qmaxs)) allocate(port_qmaxs(nlc,nbc))
       if (.not. allocated(wkm1)) allocate(wkm1(nlc,nbc))
       if (.not. allocated(bwet)) allocate(bwet(nlc,nbc))
@@ -173,6 +182,7 @@ module mod_io
       if (.not. allocated(h2o)) allocate(h2o(nlc,nbc))
       if (.not. allocated(chym_area)) allocate(chym_area(nlc,nbc))
       if (.not. allocated(chym_drai)) allocate(chym_drai(nlc,nbc))
+      if (.not. allocated(chym_lsm)) allocate(chym_lsm(nlc,nbc))
       if (.not. allocated(chym_dx)) allocate(chym_dx(nlc,nbc))
       if (.not. allocated(chym_lat)) allocate(chym_lat(nlc,nbc))
       if (.not. allocated(chym_lon)) allocate(chym_lon(nlc,nbc))
@@ -242,6 +252,33 @@ module mod_io
       call mpi_bcast(chym_drai,nbc*nlc,MPI_REAL, 0,mycomm,mpierr)
       call mpi_barrier(mycomm,mpierr)
 
+#ifdef RUNOFF
+      chym_lsm = 0.0
+      do i = 2, nlc-1
+        do j = 2 , nlc-1
+          idir = fmap(i,j)
+          if ( idir >= 1 .and. idir <= 8 ) then
+            ilnd = luse(i+ir(idir),j+jr(idir))
+            if ( chym_drai(i,j) > thrriv .and. ilnd == ocean ) then
+              chym_lsm(i,j) = 1.0
+            end if
+          end if
+#ifdef NILE
+          if ( is_inbox(lat_damietta,lon_damietta, &
+                corner_lat(:,i,j),corner_lon(:,i,j)) ) then
+            call find_nearest_land(i,j,ii,jj)
+            chym_lsm(ii,jj) = 1.0
+          end if
+          if ( is_inbox(lat_rosetta,lon_rosetta, &
+                corner_lat(:,i,j),corner_lon(:,i,j)) ) then
+            call find_nearest_land(i,j,ii,jj)
+            chym_lsm(ii,jj) = 1.0
+          end if
+#endif
+        end do
+      end do
+#endif
+
       if (isread /= 0) then
         if (myid == 0 ) then
           print*, "read chym restart data"
@@ -268,7 +305,11 @@ module mod_io
 !-----------------------------------------------------------------------
 !
     if (.not. allocated(chymout%dimid)) allocate(chymout%dimid(3))
+#ifdef RUNOFF
+    if (.not. allocated(chymout%varid)) allocate(chymout%varid(5))
+#else
     if (.not. allocated(chymout%varid)) allocate(chymout%varid(4))
+#endif
 !
     call nio_check(nf90_create(trim(outname), nf90_netcdf4,    &
                                 chymout%ncid))
@@ -361,9 +402,27 @@ module mod_io
       call nio_check(nf90_put_att(chymout%ncid, chymout%varid(4),       &
                      'long_name', 'River Discharge'),120)
       call nio_check(nf90_put_att(chymout%ncid, chymout%varid(4),       &
+                     'units', 'm3 s-1'),120)
+      call nio_check(nf90_put_att(chymout%ncid, chymout%varid(4),       &
                      'missing_value', 1.0e+36),121)
       call nio_check(nf90_put_att(chymout%ncid, chymout%varid(4),       &
                      'coordinates', "lat lon"))
+#ifdef RUNOFF
+      call nio_check(nf90_def_var(chymout%ncid, 'runoff', nf90_float,      &
+                     chymout%dimid, chymout%varid(5)),117)
+      call nio_check(nf90_def_var_deflate(chymout%ncid,chymout%varid(5),&
+           1,1,1),118)
+      call nio_check(nf90_def_var_chunking(chymout%ncid,                &
+           chymout%varid(5),0, chunksizes),119)
+      call nio_check(nf90_put_att(chymout%ncid, chymout%varid(5),       &
+                     'units', 'Kg m-2 s-1'),120)
+      call nio_check(nf90_put_att(chymout%ncid, chymout%varid(5),       &
+                     'long_name', 'River runoff'),120)
+      call nio_check(nf90_put_att(chymout%ncid, chymout%varid(5),       &
+                     'missing_value', 1.0e+36),121)
+      call nio_check(nf90_put_att(chymout%ncid, chymout%varid(5),       &
+                     'coordinates', "lat lon"))
+#endif
 !
 !-----------------------------------------------------------------------
 !     Exit define mode

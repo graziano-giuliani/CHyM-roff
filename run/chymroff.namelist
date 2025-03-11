@@ -1,5 +1,6 @@
 &iniparam
  convfac = .000277777777, ! conversion factor from input data units to mm/s
+ thrriv = 5400.0,         ! used only if compiled with -DRUNOFF
 /
 
 &inputparam
