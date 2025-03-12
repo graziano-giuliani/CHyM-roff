@@ -325,7 +325,7 @@ module mod_iface
           call write_dynvar(chymout%ncid,chymout%varid(4),port_out, &
                             iostep)
 #ifdef RUNOFF
-          roff_out = 1000.0*port_out/(chym_area*1.0e6)
+          roff_out = port_out/(chym_area*1.0e6)
           do j=2,nbc-1
             do i=2,nlc-1
               if ( chym_lsm(i,j) > 0.0 ) then

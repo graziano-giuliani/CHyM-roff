@@ -415,7 +415,7 @@ module mod_io
       call nio_check(nf90_def_var_chunking(chymout%ncid,                &
            chymout%varid(5),0, chunksizes),119)
       call nio_check(nf90_put_att(chymout%ncid, chymout%varid(5),       &
-                     'units', 'Kg m-2 s-1'),120)
+                     'units', 'm s-1'),120)
       call nio_check(nf90_put_att(chymout%ncid, chymout%varid(5),       &
                      'long_name', 'River runoff'),120)
       call nio_check(nf90_put_att(chymout%ncid, chymout%varid(5),       &
