@@ -99,9 +99,9 @@ module mod_io
         stop
       end if
       jahr1 = sdate/1000000
-      jahr2 = (sdate-jahr1)/10000
-      jahr3 = (sdate-(jahr1+jahr2))/100
-      jahr4 = (sdate-(jahr1+jahr2+jahr3))
+      jahr2 = (sdate-jahr1*1000000)/10000
+      jahr3 = (sdate-(jahr1*1000000+jahr2*10000))/100
+      jahr4 = sdate-jahr1*1000000+jahr2*10000+jahr3*100
 
       time = sdate
       if (  trim(calendar) == "gregorian" &
