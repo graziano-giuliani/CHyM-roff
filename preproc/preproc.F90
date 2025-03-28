@@ -92,7 +92,7 @@ program preproc
   call add_variable(outf,runid)
   call add_variable(outf,alfid)
 
-  call set_writemod(outf,manning,lat,lon,corner_lat,corner_lon,area)
+  call set_writemod(outf,manning,lat,lon,corner_lat,corner_lon,area,mask)
 
   call write_variable(outf,demid,dem)
   call write_variable(outf,lucid,luc)

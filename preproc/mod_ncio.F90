@@ -51,6 +51,7 @@ module mod_ncio
   integer, public, parameter :: alfid = 10
   integer, public, parameter :: ctrid = 11
   integer, public, parameter :: basid = 12
+  integer, public, parameter :: mskid = 13
 
   type ncvariable
     character(len=16) :: vname
@@ -74,7 +75,7 @@ module mod_ncio
         ncvariable('alf',nf90_float,'flow_velocity','Flow velocity','km/h'), &
         ncvariable('ctr',nf90_float,'flow_control','Flow control','m'),      &
         ncvariable('bas',nf90_int,'basin','Basin code','1'),                 &
-        ncvariable('unk',nf90_float,'unknown','Unknown','1'),                &
+        ncvariable('msk',nf90_int,'mask','Integration mask','1'),            &
         ncvariable('unk',nf90_float,'unknown','Unknown','1'),                &
         ncvariable('unk',nf90_float,'unknown','Unknown','1'),                &
         ncvariable('unk',nf90_float,'unknown','Unknown','1') ]
@@ -319,14 +320,16 @@ module mod_ncio
     call add_variable(finfo,latid)
     call add_variable(finfo,lonid)
     call add_variable(finfo,areaid)
+    call add_variable(finfo,mskid)
   end subroutine create_outfile
 
-  subroutine set_writemod(finfo,manning,lat,lon,clat,clon,area)
+  subroutine set_writemod(finfo,manning,lat,lon,clat,clon,area,mask)
     implicit none
     type(ncoutfile), intent(inout) :: finfo
-    real, dimension(:,:) :: lat, lon, area
-    real, dimension(:,:,:) :: clon, clat
-    real, dimension(:) :: manning
+    real, dimension(:,:), intent(in) :: lat, lon, area
+    integer, dimension(:,:), intent(in) :: mask
+    real, dimension(:,:,:), intent(in) :: clon, clat
+    real, dimension(:), intent(in) :: manning
     integer :: varid(3)
     ncstatus = nf90_def_var(finfo%handler,"corner_lat",      &
                             nf90_float, finfo%idimid(1:3), varid(1))
@@ -373,12 +376,14 @@ module mod_ncio
     ncstatus = nf90_enddef(finfo%handler)
     call checkerror(__LINE__, 'Cannot put file in write mode', finfo%fname)
 
-    ncstatus = nf90_put_var(finfo%handler,latid,lat)
+    ncstatus = nf90_put_var(finfo%handler,finfo%ivarid(latid),lat)
     call checkerror(__LINE__, 'Cannot write lat in file', finfo%fname)
-    ncstatus = nf90_put_var(finfo%handler,lonid,lon)
+    ncstatus = nf90_put_var(finfo%handler,finfo%ivarid(lonid),lon)
+    call checkerror(__LINE__, 'Cannot write lon in file', finfo%fname)
+    ncstatus = nf90_put_var(finfo%handler,finfo%ivarid(areaid),area)
     call checkerror(__LINE__, 'Cannot write area in file', finfo%fname)
-    ncstatus = nf90_put_var(finfo%handler,areaid,lon)
-    call checkerror(__LINE__, 'Cannot write area in file', finfo%fname)
+    ncstatus = nf90_put_var(finfo%handler,finfo%ivarid(mskid),mask)
+    call checkerror(__LINE__, 'Cannot write mask in file', finfo%fname)
     ncstatus = nf90_put_var(finfo%handler,varid(1),clat)
     call checkerror(__LINE__, 'Cannot write corner lat in file', finfo%fname)
     ncstatus = nf90_put_var(finfo%handler,varid(2),clon)
