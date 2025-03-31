@@ -174,7 +174,10 @@ AM_CONDITIONAL(COMPILER_G95, [ test x"$FC" = xg95 ] )
 AM_CONDITIONAL(COMPILER_SUN, [ test x"$FC" = xsunf95 ] )
 AM_CONDITIONAL(COMPILER_PGI, [ test x"$FC" = xpgf95  ] )
 AM_CONDITIONAL(COMPILER_INTEL, [ test x"$FC" = xifort -o \
-                                      x"$FC" = ximpif90 ])
+                                      x"$FC" = ximpif90 -o \
+                                      x"$FC" = xmpiifort ])
+AM_CONDITIONAL(COMPILER_INTEL_ONEAPI, [ test x"$FC" = xifx -o \
+                                             x"$FC" = xmpiifx ])
 AM_CONDITIONAL(CHYM_PARALLEL, [ test x"$PARALLEL" = "x1"])
 
 # Force Big endian I/O for known compilers
@@ -186,6 +189,14 @@ if test -z "$COMPILER_GNU_TRUE"; then
   AC_SUBST(FCFLAGS)
 fi
 if test -z "$COMPILER_INTEL_TRUE"; then
+  FCFLAGS="-convert big_endian -assume byterecl \
+           -heap-arrays -finline-functions"
+  CPRDEF="INTEL"
+  AC_SUBST(FCFLAGS)
+  LIBS=`echo $LIBS | sed -e 's/-Wl,--as-needed//g'`
+  AC_SUBST(LIBS)
+fi
+if test -z "$COMPILER_INTEL_ONEAPI_TRUE"; then
   FCFLAGS="-convert big_endian -assume byterecl \
            -heap-arrays -finline-functions"
   CPRDEF="INTEL"
@@ -221,6 +232,10 @@ if test -z "$COMPILER_G95_TRUE"; then
 fi
 if test -z "$COMPILER_GNU_TRUE"; then
   FCFLAGS="-O2 -mtune=native $FCFLAGS"
+  AC_SUBST(FCFLAGS)
+fi
+if test -z "$COMPILER_INTEL_ONEAPI_TRUE"; then
+  FCFLAGS="-O2 -xHost -fp-model fast=2 $FCFLAGS"
   AC_SUBST(FCFLAGS)
 fi
 if test -z "$COMPILER_INTEL_TRUE"; then
