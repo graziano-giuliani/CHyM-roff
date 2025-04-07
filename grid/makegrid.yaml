@@ -1,10 +1,10 @@
 ofile: gridfile.nc
-grid_type: orca_grid
+grid_type: regular_latlon
 regular_latlon:
-    resolution: 0.06
-    south_latitude: 28.26
-    north_latitude: 55.86
-    west_longitude: -5.76
-    east_longitude: 46.26
+    resolution: 0.0078125
+    south_latitude: 43.12500
+    north_latitude: 47.59375
+    west_longitude:  6.03125
+    east_longitude: 16.43750
 orca_grid:
     gridfile : orca_coordinates.nc

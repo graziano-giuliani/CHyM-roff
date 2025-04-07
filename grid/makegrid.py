@@ -141,7 +141,7 @@ with Dataset(ofile, "w") as dst:
 
     dst.title = 'SCRIP gridfile'
     dst.gridtype = 'cell'
-    dst.datetime = datetime.datetime.utcnow( ).isoformat( )
+    dst.datetime = datetime.datetime.now(datetime.UTC).isoformat( )
 
     # Define dimension
     dst.createDimension("grid_rank",2)
