@@ -1,5 +1,6 @@
 ofile: gridfile.nc
-grid_type: regular_latlon
+grid_type: orca_grid
+output_2d: True
 regular_latlon:
     resolution: 0.0078125
     south_latitude: 43.12500
@@ -8,3 +9,5 @@ regular_latlon:
     east_longitude: 16.43750
 orca_grid:
     gridfile : orca_coordinates.nc
+scrip_grid:
+    gridfile : SCRIP_italy.nc
