@@ -1,5 +1,7 @@
 &iniparam
- convfac = .000277777777, ! conversion factor from input data units to mm/s
+ convfac = .000277777777, ! conversion factor from input data units to m/s
+                          ! ERA5 output is m/h (averaged over day) so:
+                          ! m/h = m/s * 3600s/h -> 1/3600
  thrriv = 5400.0,         ! used only if compiled with -DRUNOFF
 /
 
