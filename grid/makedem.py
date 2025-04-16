@@ -27,7 +27,7 @@ try:
     demfile = Dataset(sys.argv[2], 'r')
 except:
     try:
-        demfile = Dataset('HydroSheds_15s_Mediterraneo.nc', 'r')
+        demfile = Dataset('HydroSheds_15s.nc', 'r')
     except:
         print('No demfile provided')
         argerror = True
@@ -44,7 +44,7 @@ try:
     rivers = gp.read_file(sys.argv[3])
 except:
     try:
-        rivers = gp.read_file('filtered.shp')
+        rivers = gp.read_file('HydroRIVERS_v10.shp')
     except:
         print('No river shapes provided')
         argerror = True
@@ -121,7 +121,7 @@ print('Created output dem data, size ', nlat, ',', nlon)
 print('    Filling it...')
 
 def process_point(row):
-    if row[2] == 0:
+    if row[2] == 2:
         a = in_dem
         poly = Polygon([Point(row[3],row[4]),
                         Point(row[5],row[6]),
