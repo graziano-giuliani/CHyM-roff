@@ -37,13 +37,13 @@ module mod_crtstat
     integer :: i , j
     do j = 1 , nlat
       do i = 1 , nlon
-        if ( mask(i,j) >= 1 ) luc(i,j) = 15
+        if ( mask(i,j) < 2 ) luc(i,j) = 15
         if ( dem(i,j) <= 0.0 ) dem(i,j) = 1.0
       end do
     end do
     do j = 1 , nlat
       do i = 1 , nlon
-        if ( luc(i,j) == 15 .and. mask(i,j) == 0 ) luc(i,j) = 65
+        if ( luc(i,j) == 15 .and. mask(i,j) == 2 ) luc(i,j) = 65
         if ( luc(i,j) == 14 ) luc(i,j) = 46
       end do
     end do
