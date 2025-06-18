@@ -35,6 +35,7 @@ module mod_crtstat
   subroutine applymask
     implicit none
     integer :: i , j
+    integer , parameter :: fillin = 76
     do j = 1 , nlat
       do i = 1 , nlon
         if ( mask(i,j) < 2 ) luc(i,j) = 15
@@ -43,8 +44,8 @@ module mod_crtstat
     end do
     do j = 1 , nlat
       do i = 1 , nlon
-        if ( luc(i,j) == 15 .and. mask(i,j) == 2 ) luc(i,j) = 65
-        if ( luc(i,j) == 14 ) luc(i,j) = 46
+        if ( luc(i,j) == 15 .and. mask(i,j) == 2 ) luc(i,j) = fillin
+        if ( luc(i,j) == 14 ) luc(i,j) = fillin
       end do
     end do
     do j = 1 , nlat

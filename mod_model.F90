@@ -23,6 +23,7 @@ module mod_model
       integer :: i,j,ii,jj,idir
       integer,save :: i1,i2,j1,j2
       real :: rainload,dm
+      real, parameter :: maxfrac = 0.95
 
       if (first) then
          first=.false.
@@ -71,8 +72,8 @@ module mod_model
           idir = fmap(j,i)
           if (luse(j,i) /= ocean .and. idir >= 1 .and. idir <= 8) then
             dm = port_sub(j,i)*deltat
-            if ( dm > h2o_sub(j,i) ) then
-               dm = h2o_sub(j,i)
+            if ( dm > maxfrac * h2o_sub(j,i) ) then
+              dm = maxfrac * h2o_sub(j,i)
             end if
             wkm1_sub(j,i) = wkm1_sub(j,i) - dm
             wkm1_sub(j+ir(idir),i+jr(idir))=                            &
@@ -91,7 +92,15 @@ module mod_model
              h2o_sub(j,i) = h2o_sub(j,i) + wkm1_sub(j,i) + &
                             convfac*rainload
              h2o_sub(j,i) = max(h2o_sub(j,i),0.0)
-             bwet_sub(j,i) = h2o_sub(j,i) / chym_dx(j,i)
+             if ( farm(j,i) .and. chym_lat(j,i) > 0.0 ) then
+               ! Some water is not transmitted for irrigation
+               bwet_sub(j,i) = (1.-irmonfac(imon)/deltat) * &
+                   h2o_sub(j,i) / chym_dx(j,i)
+               ! Evaporative loss of the water for irrigation
+               h2o_sub(j,i) = (1.-irloss*irmonfac(imon)/deltat) * h2o_sub(j,i)
+             else
+               bwet_sub(j,i) = h2o_sub(j,i) / chym_dx(j,i)
+             end if
              port_sub(j,i) = alfa(j,i) * bwet_sub(j,i)
           end if
         end do

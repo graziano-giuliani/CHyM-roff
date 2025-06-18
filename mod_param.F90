@@ -23,6 +23,10 @@ module mod_param
   data ir /-1, 0, 1, 1, 1, 0,-1,-1,0/
   data jr / 1, 1, 1, 0,-1,-1,-1, 0,0/
 
+  real, parameter :: irloss = 0.05
+  real, dimension(12), parameter :: irmonfac = &
+    [ 0.00, 0.00, 0.00, 0.02, 0.10, 0.15, 0.20, 0.15, 0.02, 0.00, 0.00, 0.00 ]
+
   real :: thrriv = 5400.0
 
   real :: deltat
@@ -33,6 +37,7 @@ module mod_param
   integer, allocatable :: fmap(:,:)
   real, allocatable :: accl(:,:)
   integer, allocatable :: luse(:,:)
+  logical, allocatable :: farm(:,:)
   real, allocatable :: port_sub(:,:)
   real, allocatable :: h2o_sub(:,:)
   real, allocatable :: bwet_sub(:,:)

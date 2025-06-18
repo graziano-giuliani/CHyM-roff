@@ -165,6 +165,7 @@ module mod_io
       if (.not. allocated(fmap)) allocate(fmap(nlc,nbc))
       if (.not. allocated(accl)) allocate(accl(nlc,nbc))
       if (.not. allocated(luse)) allocate(luse(nlc,nbc))
+      if (.not. allocated(farm)) allocate(farm(nlc,nbc))
       if (.not. allocated(port)) allocate(port(nlc,nbc))
       if (.not. allocated(port_out)) allocate(port_out(nlc,nbc))
 #ifdef RUNOFF
@@ -174,9 +175,6 @@ module mod_io
       if (.not. allocated(wkm1)) allocate(wkm1(nlc,nbc))
       if (.not. allocated(bwet)) allocate(bwet(nlc,nbc))
       if (.not. allocated(h2o)) allocate(h2o(nlc,nbc))
-      if (.not. allocated(accl)) allocate(accl(nlc,nbc))
-      if (.not. allocated(luse)) allocate(luse(nlc,nbc))
-      if (.not. allocated(port)) allocate(port(nlc,nbc))
       if (.not. allocated(wkm1)) allocate(wkm1(nlc,nbc))
       if (.not. allocated(bwet)) allocate(bwet(nlc,nbc))
       if (.not. allocated(h2o)) allocate(h2o(nlc,nbc))
@@ -254,8 +252,8 @@ module mod_io
 
 #ifdef RUNOFF
       chym_lsm = 0.0
-      do i = 2, nlc-1
-        do j = 2 , nlc-1
+      do j = 2 , nlc-1
+        do i = 2, nbc-1
           idir = fmap(i,j)
           if ( idir >= 1 .and. idir <= 8 ) then
             ilnd = luse(i+ir(idir),j+jr(idir))
@@ -278,6 +276,22 @@ module mod_io
         end do
       end do
 #endif
+
+      do j = 2 , nlc-1
+        do i = 2, nbc-1
+          if ( luse(i,j) == 30 .or. luse(i,j) == 31 .or. &
+               luse(i,j) == 35 .or. luse(i,j) == 36 .or. &
+               luse(i,j) == 37 .or. luse(i,j) == 38 .or. &
+               luse(i,j) == 39 .or. luse(i,j) == 76 .or. &
+               luse(i,j) == 92 .or. luse(i,j) == 93 .or. &
+               luse(i,j) == 94 .or. luse(i,j) == 95 .or. &
+               luse(i,j) == 96 ) then
+            farm(i,j) = .true.
+          else
+            farm(i,j) = .false.
+          end if
+        end do
+      end do
 
       if (isread /= 0) then
         if (myid == 0 ) then
