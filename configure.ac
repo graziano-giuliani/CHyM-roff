@@ -52,8 +52,8 @@ fi
 ##old AC_CHECK_LIB([netcdff], [-lnetcdff])
 
 # Special Nile and Runoff on ocean for MIT !
-AM_CPPFLAGS="-DNILE -DRUNOFF $AM_CPPFLAGS"
-AC_SUBST(AM_CPPFLAGS)
+# AM_CPPFLAGS="-DNILE -DRUNOFF $AM_CPPFLAGS"
+# AC_SUBST(AM_CPPFLAGS)
 
 # Checks for header files.
 
