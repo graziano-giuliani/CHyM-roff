@@ -192,9 +192,13 @@ module mod_crtstat
       do i = 2 , nlon - 1
         k = fmap(i,j)
         if ( luc(i,j)/=ocean .and. k>0 .and. k<=8 ) then
-          accl(i,j) = (dem(i,j)-dem(i+ir(k),j+jr(k)))  &
-                      /distance(lat(i,j),lon(i,j),lat(i+ir(k),j+jr(k)), &
-                      lon(i+ir(k),j+jr(k)))
+          if ( mask(i+ir(k),j+jr(k)) == 0 ) then
+            accl(i,j) = 0.0
+          else
+            accl(i,j) = (dem(i,j)-dem(i+ir(k),j+jr(k)))  &
+                        /distance(lat(i,j),lon(i,j),lat(i+ir(k),j+jr(k)), &
+                        lon(i+ir(k),j+jr(k)))
+          end if
           if ( accl(i,j) <= 1.0E-05 ) then
             noflow(i,j) = 8
             ncor = ncor + 1
