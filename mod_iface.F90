@@ -50,8 +50,6 @@ module mod_iface
 
       call read_init()
 
-      call runoffspeed
-
       if (.not. allocated(chym_runoff)) allocate(chym_runoff(nlc,       &
        nbc))
 
@@ -366,75 +364,5 @@ module mod_iface
         call mpi_barrier(mycomm,mpierr)
         call mpi_finalize(mpierr)
     end subroutine
-
-    subroutine runoffspeed
-      implicit none
-      integer i,j,idir,land
-      real mann
-      real alfamin,alfamax,enne,xgamma,delta,tresh,hrad
-      xgamma = 0.33
-      delta = 4.5                                       !cpar(8) in CHyM
-      tresh = 100.0                                     !cpar(6) in CHyM
-      alfamin = 0.1
-      alfamax =  50.0
-      alfa(:,:) = alfamin
-      do j = 2, nbc-1
-        do i = 2, nlc-1
-          if (chym_lat(i,j) > 50.50407 .and. chym_lat(i,j) < 51.79574   &
-              .and. chym_lon(i,j) > 5.7957 .and. chym_lon(i,j) < 7.5957 &
-              .and. luse(i,j) == ocean ) then
-              luse(i,j) = lake
-          end if
-          idir = fmap(i,j)
-          land = luse(i,j)
-          mann = manning(int(luse(i,j)))
-          if (idir.ge.1.and.idir.le.8.and.land.ne.ocean.and.land.gt.0)   &
-            then
-            if (land.gt.lntypes.or.land.le.0) then
-              print*,"Error in line: 845   in file: mod_hd_io"
-              call exit(0)
-            end if
-            chym_dx(i,j) = geodistance(chym_lat(i,j),chym_lon(i,j),     &
-                 chym_lat(i+ir(idir),j+jr(idir)),                       &
-                 chym_lon(i+ir(idir),j+jr(idir)))
-            if ( chym_drai(i,j) > tresh ) then
-               enne = mann/delta
-            else
-               enne = mann/ &
-                (1.+(delta-1.)*(1.+(chym_drai(i,j)-tresh)/tresh))
-            endif
-            !In CHyM 0.0015 = cpar( 2) ---> Alpha coefficients for
-            !hydraulic radius (0.0015)
-            !In CHyM 0.050 = cpar( 3) ---> Beta coefficients for
-            !hydraulic radius (0.050)
-            hrad = 0.0015 + 0.050*((chym_drai(i,j)*1.e00)**xgamma)
-            alfa(i,j) = ((hrad**0.6666*accl(i,j)**0.5)/(enne))
-            if ( chym_drai(i,j) > 5000 .and. &
-                 alfa(i,j) > 0.5 ) alfa(i,j) = 0.5
-            if ( alfa(i,j) < alfamin ) alfa(i,j) = alfamin
-            if ( alfa(i,j) > alfamax ) alfa(i,j) = alfamax
-          endif
-        enddo
-      enddo
-    end subroutine runoffspeed
-!
-    real function geodistance(latt1,lonn1,latt2,lonn2)
-      implicit none
-      real rad,dpi ; parameter(rad=6371000.0,dpi=6.2831855)
-      real latt1,lonn1,latt2,lonn2,lt1,lt2,ln1,ln2,x,y
-      lt1=latt1*dpi/360. ; lt2=latt2*dpi/360.
-      ln1=lonn1*dpi/360. ; ln2=lonn2*dpi/360.
-      if (abs(latt1-latt2).lt.0.2.and.abs(lonn1-lonn2).lt.0.2) then
-          x=(rad*cos(lt1)*(ln1-ln2))*(rad*cos(lt2)*(ln1-ln2))
-          y=(rad*(lt1-lt2))**2
-          geodistance=sqrt(x+y)
-      else
-         x=sin(lt1)*sin(lt2)+cos(lt1)*cos(lt2)*cos((ln1)-(ln2))
-         if (x.gt.1) x=1.0
-         geodistance=acos(x)*rad
-      endif
-      if (geodistance.lt.0.1) geodistance=0.1
-      return
-    end function geodistance
 
 end module mod_iface

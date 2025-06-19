@@ -15,7 +15,7 @@ module mod_model
       implicit none
       real, intent(in) :: chym_runoff(:,:)
       integer, intent(in) :: imon, iday
-      real :: tmp
+      real :: tmp, rirf
       logical :: first
       data first /.true./
       save first
@@ -23,7 +23,6 @@ module mod_model
       integer :: i,j,ii,jj,idir
       integer,save :: i1,i2,j1,j2
       real :: rainload,dm
-      real, parameter :: maxfrac = 0.95
 
       if (first) then
          first=.false.
@@ -72,8 +71,8 @@ module mod_model
           idir = fmap(j,i)
           if (luse(j,i) /= ocean .and. idir >= 1 .and. idir <= 8) then
             dm = port_sub(j,i)*deltat
-            if ( dm > maxfrac * h2o_sub(j,i) ) then
-              dm = maxfrac * h2o_sub(j,i)
+            if ( dm > efficiency * h2o_sub(j,i) ) then
+              dm = efficiency * h2o_sub(j,i)
             end if
             wkm1_sub(j,i) = wkm1_sub(j,i) - dm
             wkm1_sub(j+ir(idir),i+jr(idir))=                            &
@@ -89,15 +88,14 @@ module mod_model
           if (luse(j,i) /= ocean .and. idir >= 1 .and. idir <= 8) then
              ! m3 of water recharge in the  grid cell
              rainload = chym_area(j,i)*1.0e+06*(chym_runoff(j,i))*deltat
-             h2o_sub(j,i) = h2o_sub(j,i) + wkm1_sub(j,i) + &
-                            convfac*rainload
+             h2o_sub(j,i) = h2o_sub(j,i) + wkm1_sub(j,i) + convfac*rainload
              h2o_sub(j,i) = max(h2o_sub(j,i),0.0)
-             if ( farm(j,i) .and. chym_lat(j,i) > 0.0 ) then
+             if ( farm(j,i) ) then
+               rirf = irmonfac(imon)/deltat
                ! Some water is not transmitted for irrigation
-               bwet_sub(j,i) = (1.-irmonfac(imon)/deltat) * &
-                   h2o_sub(j,i) / chym_dx(j,i)
+               bwet_sub(j,i) = (1.-rirf) * h2o_sub(j,i) / chym_dx(j,i)
                ! Evaporative loss of the water for irrigation
-               h2o_sub(j,i) = (1.-irloss*irmonfac(imon)/deltat) * h2o_sub(j,i)
+               h2o_sub(j,i) = (1.-irloss*rirf) * h2o_sub(j,i)
              else
                bwet_sub(j,i) = h2o_sub(j,i) / chym_dx(j,i)
              end if

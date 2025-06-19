@@ -565,10 +565,8 @@ module mod_crtstat
     wrk2 = 0
     alfa = 0.0
     xgamma = 0.33
-    delta = cpar8           ! Param. for land/channel flow
+    delta = cpar8          ! Param. for land/channel flow
     tresh = cpar6
-    alfamin = 0.10         ! Minimum value of surface runoff speed
-    alfamax = 3.0          ! Maximum value of surface runoff speed
     do i = 2 , nlon - 1
       do j = 2 , nlat - 1
         idir = fmap(i,j)
@@ -583,18 +581,10 @@ module mod_crtstat
           dx(i,j) = distance(lat(i,j),lon(i,j), &
                              lat(i+ir(idir),j+jr(idir)), &
                              lon(i+ir(idir),j+jr(idir)))
-          if ( drai(i,j)>tresh ) then
-            enne = mann/delta
-          else
-            enne = mann/(1+(delta-1)*(1+(drai(i,j)-tresh)/tresh))
-          end if
-          hrad = cpar2 + cpar3*((drai(i,j)*1.E00)**xgamma)
-          if ( enne > 1.0e-20 ) then
-            alfa(i,j) = ((hrad**0.6666*accl(i,j)**0.5)/(enne))
-            if ( alfa(i,j)<alfamin ) alfa(i,j) = alfamin
-          else
-            alfa(i,j) = alfamax
-          end if
+          !enne = mann/(1.+(delta-1.)*(1.+max((drai(i,j)-tresh),0.0)/tresh))
+          enne = mann/delta
+          hrad = cpar2 + cpar3*(max(drai(i,j),tresh)**xgamma)
+          alfa(i,j) = ((hrad**0.6666)*(accl(i,j)**0.5))/enne
         end if
       end do
     end do
