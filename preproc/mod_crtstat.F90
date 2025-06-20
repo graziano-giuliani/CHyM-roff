@@ -585,8 +585,11 @@ module mod_crtstat
           dx(i,j) = distance(lat(i,j),lon(i,j), &
                              lat(i+ir(idir),j+jr(idir)), &
                              lon(i+ir(idir),j+jr(idir)))
-          !enne = mann/(1.+(delta-1.)*(1.+max((drai(i,j)-tresh),0.0)/tresh))
-          enne = mann/delta
+          if ( drai(i,j) < tresh ) then
+            enne = mann/(1.+(delta-1.)*(1.+max((drai(i,j)-tresh),0.0)/tresh))
+          else
+            enne = mann/delta
+          end if
           hrad = cpar2 + cpar3*(max(drai(i,j),tresh)**xgamma)
           alfa(i,j) = ((hrad**0.6666)*(accl(i,j)**0.5))/enne
         end if

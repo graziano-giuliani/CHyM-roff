@@ -18,9 +18,9 @@
   cpar3  = 0.050   ! Beta coefficients for hydraulic radius
   cpar4  = 0.050   ! Melting temperature factor
   cpar5  = 0.0094  ! Melting shortwave rad. factor
-  cpar6  = 500.0   ! River/land threshold (Km2)
+  cpar6  = 100.0   ! River/land threshold (Km2)
   cpar7  = 90.0    ! Number of days to consider for return flow
-  cpar8  = 4.5     ! Reduction of land/channel manning coefficient
+  cpar8  = 5.5     ! Reduction of land/channel manning coefficient
   cpar9  = 200.0   ! River/land threshold (Km2) for returnflowcient
   ncyc1  = 100     ! Number of DEM Smoothing cycles by CA algorithm
   ncyc2  = 1000    ! Number of DEM Smoothing cycles by filling algorithm
@@ -62,8 +62,8 @@
   manning(27)  =  0.160 !'Conifer Forest',
   manning(28)  =  0.200 !'Montane Tropical Forests',
   manning(29)  =  0.200 !'Seasonal Tropical Forest',
-  manning(30)  =  0.080 !'Cool Crops and Towns',
-  manning(31)  =  0.055 !'Crops and Town',
+  manning(30)  =  0.100 !'Cool Crops and Towns',
+  manning(31)  =  0.100 !'Crops and Town',
   manning(32)  =  0.200 !'Dry Tropical Woods',
   manning(33)  =  0.200 !'Tropical Rainforest',
   manning(34)  =  0.150 !'Tropical Degraded Forest',
