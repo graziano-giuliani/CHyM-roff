@@ -41,12 +41,28 @@ Because the CHyM model does not have a description of the ground but only takes 
 
 $$Q = \frac{\sqrt{S} R^{\frac{2}{3}}}{n} A$$
 
-where $n$ is the Manning coefiicient, $Q$ is the flow rate of water discharge, $S$ is the slope, $R$ is the hydraulic radius, linear function of the drained area $D$ as in:
+where $n$ is a function of the Manning coefiicient $M$:
 
-$$R = \beta + \gamma D^{\delta}$$
+$$n(M) = \frac{M}{\delta}$$
 
-with $\beta$, $\gamma$ and $\delta$ calibration coefficients. Once the flow rate is computed, using the continuity equation for the water:
+with $\delta$ configurable parameter, currently set to $\delta = 5.5$.
+
+$Q$ is the flow rate of water discharge, $S$ is the slope, $R$ is the hydraulic radius, linear function of the drained area $D$ as in:
+
+$$R = \alpha + \beta max(D,D_{min})^{\gamma}$$
+
+with $\alpha$, $\beta$, $\gamma$ and $D_{min}$ calibration coefficients. Values used are:
+
+$\alpha = 0.0015$, $\beta = 0.05$, $\gamma = \frac{1}{3}$ and $D_{min} = 100 km^2$.
+
+If the dain area is less than the threshold value $D_{min}$, the $n$ function is modified to be:
+
+$$n(M) = \frac{M}{1+(\delta-1) \frac{1+(D-D_{min})}{D_{min}}}$$
+
+Once the flow rate is computed, using the continuity equation for the water:
 
 $$\frac{\partial A}{\partial t} + \frac{\partial Q}{\partial x} = q_c$$
 
 where $q_c$ is the water per length unit calculated from the input runoff, the river discharge can be computed by time integration with a configurable timestep.
+
+The 
