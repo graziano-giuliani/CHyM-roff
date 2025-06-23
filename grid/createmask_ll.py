@@ -11,7 +11,7 @@ src = Dataset(sys.argv[1], 'r+')
 luc = src.variables["luc"][:].data
 lat = src.variables["lat"][:]
 lon = src.variables["lon"][:]
-mask = np.where(luc == 15,1,0)
+mask = np.where(luc == 15,2,0)
 
 dst = Dataset('maskfile.nc','w')
 dst.setncatts(src.__dict__)
