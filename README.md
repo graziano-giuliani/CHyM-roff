@@ -39,14 +39,14 @@ The time integration requires in input monthly files for the *runoff* variable, 
 
 Because the CHyM model does not have a description of the ground but only takes care of the water transmission phase, the infiltration part of the original CHyM model is not present in the CHyM-roff model, which just simulates the momentum equation:
 
-$ Q = \frac{\sqrt{S} R^{\frac{2}{3}}}{n} A$
+$$Q = \frac{\sqrt{S} R^{\frac{2}{3}}}{n} A$$
 
 where $Q$ is the flow rate of water discharge, $S$ is the slope, $R$ is the hydraulic radius, linear function of the drained area $D$ as in:
 
-$ R = \beta + \gamma D^{delta} $
+$$R = \beta + \gamma D^{delta}$$
 
 with $\beta$, $\gamma$ and $\delta$ calibration coefficients. Once the flow rate is computed, using the continuity equation for the water the river discharge is computed:
 
-$ \frac{\partial A}}{\partial t} + \frac{\partial Q}{\partial x} = qc $
+$$\frac{\partial A}}{\partial t} + \frac{\partial Q}{\partial x} = q_c$$
 
 where qc is the water per length unit calculated from the input runoff.
