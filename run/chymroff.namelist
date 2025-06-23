@@ -15,7 +15,7 @@
  dstep = 24,   ! Input runoff data timestep in hours
  step  = 300,  ! Model steps per each input timestep
  tdninp = 'input/runoff', ! Input file directory and prefix
- tdnini = 'output/med_rst.nc',
+ tdnini = 'january_mean.nc',
  tdnstk = 'chym_stk.nc',
 /
 

@@ -568,9 +568,9 @@ module mod_crtstat
     !!!
     wrk2 = 0
     alfa = 0.0
-    xgamma = 0.33
-    delta = cpar8          ! Param. for land/channel flow
+    xgamma = cpar4
     tresh = cpar6
+    delta = cpar8
     do i = 2 , nlon - 1
       do j = 2 , nlat - 1
         idir = fmap(i,j)

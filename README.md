@@ -23,15 +23,15 @@ Major modification with respect to Fabio code is the introduction of:
 
 To compile the code, the user needs NetCDF and MPI libraries. The configure script should be able to locate the required bit. The procedure to create executables is:
 
-    1. *autoreconf -f-i*
-    2. *./configure*
-    3. *make install*
+    1. autoreconf -f-i
+    2. ./configure
+    3. make install
 
 The two binary files will be created in the *bin* directory. The *run* directory contains example namelist files.
 
 The user should first get into the grid directory to create the input for the preproc model. When the input set for the preproc is ready, the creation of the hydrological river drain network and the transmission parameters is done by running the preproc program:
 
-    1. *preproc preproc.namelist*
+    1. preproc preproc.namelist
 
 For the description of the Cellular Automata method creating the river network, the user can look at [Coppola et al. paper](https://www.tandfonline.com/doi/abs/10.1623/hysj.52.3.579).
 
@@ -45,7 +45,7 @@ where $n$ is a function of the Manning coefiicient $M$:
 
 $$n(M) = \frac{M}{\delta}$$
 
-with $\delta$ configurable parameter, currently set to $\delta = 5.5$.
+with $\delta$ configurable parameter, currently set to $\delta = 5.5$ ($cpar8$ in the preproc namelist).
 
 $Q$ is the flow rate of water discharge, $S$ is the slope, $R$ is the hydraulic radius, linear function of the drained area $D$ as in:
 
@@ -53,9 +53,9 @@ $$R = \alpha + \beta \max(D,D_{min})^{\gamma}$$
 
 with $\alpha$, $\beta$, $\gamma$ and $D_{min}$ calibration coefficients. Values used are:
 
-$\alpha = 0.0015$, $\beta = 0.05$, $\gamma = \frac{1}{3}$ and $D_{min} = 100 km^2$.
+$\alpha = 0.0015$ ($cpar2$ in the preproc namelist), $\beta = 0.05$ ($cpar3$ in the preproc namelist), $\gamma = \frac{1}{3}$ ($cpar4$ in the preproc namelist) and $D_{min} = 100 km^2$ ($cpar6$ in the preproc namelist).
 
-If the dain area is less than the threshold value $D_{min}$, the $n$ function is modified to be:
+If the drain area is less than the threshold value $D_{min}$, the $n$ function is modified to be:
 
 $$n(M) = \frac{M}{1+(\delta-1) \frac{1+(D-D_{min})}{D_{min}}}$$
 
@@ -65,4 +65,4 @@ $$\frac{\partial A}{\partial t} + \frac{\partial Q}{\partial x} = q_c$$
 
 where $q_c$ is the water per length unit calculated from the input runoff, the river discharge can be computed by time integration with a configurable timestep.
 
-The 
+The *preproc* program pre-computes the flow rate for every point of the domain, and the *chymroff* model is taking care of the time integration with configurable timestep 

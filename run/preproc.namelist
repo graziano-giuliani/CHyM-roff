@@ -8,20 +8,11 @@
 /
 
 &chymparam
-  ! Other known settings for Rhone basin:
-  ! cpar1 = 2.0e-06
-  ! cpar4 = 0.03
-  ! cpar5 = 0.00540
-  ! cpar9 = 200.0
-  cpar1  = 4.8e-07 ! Return flow factor
-  cpar2  = 0.0015  ! Alpha coefficients for hydraulic radius
-  cpar3  = 0.050   ! Beta coefficients for hydraulic radius
-  cpar4  = 0.050   ! Melting temperature factor
-  cpar5  = 0.0094  ! Melting shortwave rad. factor
+  cpar2  = 0.0015  ! Alpha coefficient for hydraulic radius
+  cpar3  = 0.050   ! Beta coefficient for hydraulic radius
+  cpar4  = 0.33    ! Gamma coefficient for hydraulic radius
   cpar6  = 100.0   ! River/land threshold (Km2)
-  cpar7  = 90.0    ! Number of days to consider for return flow
   cpar8  = 5.5     ! Reduction of land/channel manning coefficient
-  cpar9  = 200.0   ! River/land threshold (Km2) for returnflowcient
   ncyc1  = 100     ! Number of DEM Smoothing cycles by CA algorithm
   ncyc2  = 1000    ! Number of DEM Smoothing cycles by filling algorithm
   ncyc3  = 21      ! Number of cycles for CA Algorithm Correction

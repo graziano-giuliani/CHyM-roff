@@ -71,24 +71,16 @@ module mod_common
   character(len=512) , public :: riverfile = "none"
   character(len=512) , public :: outfile
 
-  ! Return flow factor
-  real , public :: cpar1  = 4.8e-07
-  ! Alpha coefficients for hydraulic radius
+  ! Alpha coefficient for hydraulic radius
   real , public :: cpar2  = 0.0015
-  ! Beta coefficients for hydraulic radius
+  ! Beta coefficient for hydraulic radius
   real , public :: cpar3  = 0.050
-  ! Melting temperature factor
-  real , public :: cpar4  = 0.050
-  ! Melting shortwave rad. factor
-  real , public :: cpar5  = 0.0094
+  ! Gamma coefficient for hydraulic radius
+  real , public :: cpar4  = 0.33
   ! River/land threshold (Km2)
   real , public :: cpar6  = 500.0
-  ! Number of days to consider for return flow
-  real , public :: cpar7  = 90.0
   ! Reduction of land/channel manning coefficient
-  real , public :: cpar8  = 4.5
-  ! River/land threshold (Km2) for returnflowcient
-  real , public :: cpar9  = 200.0
+  real , public :: cpar8  = 5.5
 
   integer, public :: angiocycle = 1
   integer, public :: angionp = 40
@@ -110,8 +102,7 @@ module mod_common
 
     namelist /chymconfig/ gridfile, demfile, landfile, &
                           maskfile, riverfile, outfile
-    namelist /chymparam/ cpar1, cpar2, cpar3, cpar4, cpar5, &
-                         cpar6, cpar7, cpar8, cpar9, &
+    namelist /chymparam/ cpar2, cpar3, cpar4, cpar6, cpar8, &
                          ncyc1, ncyc2, ncyc3, &
                          angiocycle, angionp
     namelist /manningparam/ manning
