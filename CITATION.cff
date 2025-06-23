@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: Di Sante
+    given-names: Fabio
+    orcid: https://orcid.org/0000-0003-3875-8311
+title: "Projections of river floods in Europe using EURO-CORDEX, CMIP5 and CMIP6 simulations"
+version: 1.0.0
+identifiers:
+  - type: doi
+    value: 10.1002/joc.7014
+date-released: 2021-04
