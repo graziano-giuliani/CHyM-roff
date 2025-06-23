@@ -9,6 +9,10 @@ from shapely.geometry import Point, Polygon
 from netCDF4 import Dataset
 from tqdm import tqdm
 
+HIGH_MARK = 50
+LOW_MARK = 10
+RESOLUTION = 0.1
+
 def coord_to_point(alon, alat):
     lon = alon.data.flatten( )
     lat = alat.data.flatten( )
@@ -133,8 +137,8 @@ def process_point(row):
             within = in_dem.loc[pos,'dem'].to_numpy( )
             within = within[within > 0]
             if within.size > 0:
-                row[0] = np.maximum(np.quantile(within,0.5), 5.0)
-                row[1] = np.maximum(np.quantile(within,0.1), 2.0)
+                row[0] = np.maximum(np.quantile(within,HIGH_MARK/100.), 5.0)
+                row[1] = np.maximum(np.quantile(within,LOW_MARK/100.), 2.0)
             else:
                 row[0] = 5.0
                 row[1] = 2.0
@@ -150,7 +154,7 @@ out_dem = out_dem.progress_apply(process_point,
 print('Data filling complete.')
 
 print('Simplify rivers...')
-simpler = rivers.simplify(0.1)
+simpler = rivers.simplify(RESOLUTION)
 print('Done')
 
 print('Etching rivers....')

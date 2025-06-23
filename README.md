@@ -48,13 +48,13 @@ $$\frac{\partial A}{\partial t} + \frac{\partial Q}{\partial x} = q_c$$
 
 where $q_c$ is the water per length unit calculated from the input runoff, the river discharge can be computed by time integration with a configurable timestep as a fraction ($step$ in chymroff namelist) of the input time step ($dstep$ in the chymroff namelist).
 
-The optional irrigation loss mod introduced acts by reducing the water per unit lenght available for flow by a factor changing on a monthly basis:
+The optional irrigation loss mod introduced acts by reducing the water per unit lenght available for flow by a factor changing on a monthly basis for the gridcells where a "crop type" category is present (classes $30,31,35,36,37,38,39,76,92,93,94,95,96):
 
-$$q_c = (1-r_i) q_c$$
+$$q_c = \frac{1 - r_i}{dt} q_c$$
 
 and allowing for a loss of the water reservoir:
 
-$$W_a = (1-r_l r_i) W_a$$
+$$\frac{\partial A}{\partial t)\vert_{irr} = \frac{1 - r_l r_i}{dt} A$$
 
 where $r_i$ is a factor changing with calendar month, and $r_l$ is a constant.
 The values can be tuned in the chymroff namelist ($irloss$ and $irmonfac$). Setting all to $0$ disables the mod.
@@ -132,7 +132,7 @@ The user must finally define the time integration window and calendar. Once the 
 
     mpirun ./chymroff chymroff.namelist
 
-Similar consideration as above for the name of the namelist file. The output files will be created in the requested output path with the requested naming convention. A simple dataset which can be used to verify results is the RivDIS v1.1 available [here](https://doi.org/10.3334/ORNLDAAC/199).
+Similar consideration as above for the name of the namelist file. The output files will be created in the requested output path with the requested naming convention. A simple dataset which can be used to verify results is the RivDIS v1.1 available [here](https://doi.org/10.3334/ORNLDAAC/199). Example plotting script is in the run directory as *plot.py*
 
 # Questions?
 
