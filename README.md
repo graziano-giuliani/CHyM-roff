@@ -128,13 +128,13 @@ The yearly input file names and the data frequency herein is configurable in the
 The user can restart the run from a previous checkpoint file (*rst*) by changing to the value $1$ the value of the $isread$ entry.
 The restart file production and frequency is also configurable, and the output file basic naming prefixed part. The user is responsible to create the output file path if it does not already exist.
 
-The user must finally define the time integration widow and calendar. Once the input is ready and the model is configured, the user can run the model in parallel:
+The user must finally define the time integration window and calendar. Once the input is ready and the model is configured, the user can run the model in parallel in the *run* directory:
 
-    mpirun chymroff chymroff.namelist
+    mpirun ./chymroff chymroff.namelist
 
-Similar consideration as above for the name of the namelist file. The output files will be created in the requested output path with the requested naming convention.
+Similar consideration as above for the name of the namelist file. The output files will be created in the requested output path with the requested naming convention. A simple dataset which can be used to verify results is the RivDIS v1.1 available [here](https://doi.org/10.3334/ORNLDAAC/199).
 
 # Questions?
 
-Please drop me an email if you need help.
+Please drop me an email if you need help: [ggiulian\@ictp.it](mailto:ggiulian\@ictp.it)
 
