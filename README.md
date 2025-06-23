@@ -47,6 +47,6 @@ $$R = \beta + \gamma D^{delta}$$
 
 with $\beta$, $\gamma$ and $\delta$ calibration coefficients. Once the flow rate is computed, using the continuity equation for the water the river discharge is computed:
 
-$$\frac{\partial A}}{\partial t} + \frac{\partial Q}{\partial x} = q_c$$
+$$\frac{\partial A}{\partial t} + \frac{\partial Q}{\partial x} = q_c$$
 
 where qc is the water per length unit calculated from the input runoff.
