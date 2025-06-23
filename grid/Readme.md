@@ -2,6 +2,11 @@
 
 This file describes the procedure to create input files for the CHyM preproc.
 
+# NOTE!
+
+IT IS USER TASK TO EXAMINE THE python SCRIPTS AND VERIFY ALL THE PACKAGES
+IMPORTED ARE AVAILABLE ON HER SYSTEM.
+
 ## Create the Gridfile
 
 Create grid file using the python script, either onto regular
@@ -44,9 +49,6 @@ smaller area and interpolate the land cover area onto the chosen grid.
 The user can find a python script doing these steps. It needs the user to
 have installed [cdo](https://code.mpimet.mpg.de/projects/cdo) and
 [GDAL](https://gdal.org/en/stable).
-
-IT IS USER TASK TO EXAMINE THE python SCRIPTS AND VERIFY ALL THE PACKAGES
-IMPORTED ARE AVAILABLE ON HER SYSTEM.
 
 Once the two input global dataset files
 are copied or linked in this directory (*hyd_glo_dem_15s.tif* and
