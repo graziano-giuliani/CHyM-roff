@@ -82,7 +82,7 @@ replicate my setting OR adapt to her own needs.
 
 1. Extend the MITgcm Mediterranean mask.
 
-     python3 extend_mask.py
+      python3 extend_mask.py
 
 2. Fine tuning the mask. It is both to match the coastlines between CHyM and MITgcm, and to reduce computational cost by removing basins not feeding into the Mediterranean-Black Sea basins. It needs the user to download also Basin shapefiles from the HydroSheds. The resulting maskfile will contain the following mask:
 
@@ -90,14 +90,14 @@ replicate my setting OR adapt to her own needs.
 * 1 : Ocean points for BOTH MITgcm and CHyM.
 * 2 : land points the CHyM should work on.
 
-     python3 cleanmask.py
+      python3 cleanmask.py
 
 ### Regular lat/lon grid
 
 Run the script **createmask_ll.py**, which creates the mask based on the
 landuse category in the file **landfile.nc**
 
-     python3 createmask_ll.py
+      python3 createmask_ll.py
 
 ## Create River Network enforcing (optional)
 
