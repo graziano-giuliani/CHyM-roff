@@ -25,7 +25,7 @@ domain in the **MED12-ocean-mit** repository [here](https://github.com/graziano-
 
 In the **MED12-ocean-mit/grid** directory, run:
 
-    ./create_coordinates namelist_R12
+     ./create_coordinates namelist_R12
 
 and copy the file **1_coordinates_ORCA_R12.nc** in this directory as the file
 **orca_coordinates.nc**.
@@ -55,7 +55,7 @@ are copied or linked in this directory (*hyd_glo_dem_15s.tif* and
 *gbogegeo20.tif*) and the *gridfile.nc* is present, the user can run the
 interpolation script:
 
-    python3 interpolate.py
+     python3 interpolate.py
 
 The result should be the the two files:
 
@@ -64,9 +64,11 @@ The result should be the the two files:
 
 #### Optional:
 
-The user may want to create a clipped down version of the global HydroEivers shape file (same source as Hydrosheds). For the Mediterranean (NOT USED!) this would ampunt to:
+The user may want to create a clipped down version of the global HydroEivers shape file (same source as Hydrosheds). For the Mediterranean (NOT USED!) this would boil down to:
 
      ogr2ogr -clipsrc -7.0 27.0 48.5 63.5 filtered.shp HydroRIVERS_v10.shp 
+
+Note the extrema here are for the Mediterranean experiment.
 
 ## Create land/ocean mask
 
@@ -80,7 +82,7 @@ replicate my setting OR adapt to her own needs.
 
 1. Extend the MITgcm Mediterranean mask.
 
-    python3 extend_mask.py
+     python3 extend_mask.py
 
 2. Fine tuning the mask. It is both to match the coastlines between CHyM and MITgcm, and to reduce computational cost by removing basins not feeding into the Mediterranean-Black Sea basins. It needs the user to download also Basin shapefiles from the HydroSheds. The resulting maskfile will contain the following mask:
 
@@ -88,14 +90,14 @@ replicate my setting OR adapt to her own needs.
 * 1 : Ocean points for BOTH MITgcm and CHyM.
 * 2 : land points the CHyM should work on.
 
-    python3 cleanmask.py
+     python3 cleanmask.py
 
 ### Regular lat/lon grid
 
 Run the script **createmask_ll.py**, which creates the mask based on the
 landuse category in the file **landfile.nc**
 
-    python3 createmask_ll.py
+     python3 createmask_ll.py
 
 ## Create River Network enforcing (optional)
 
@@ -131,19 +133,20 @@ The algorithm used for the coarsening of the input high resolution DEM file
 is the following:
 
 1. Read all input datasets:
-  1. The *gridfile.nc* created above
-  2. The *HydroSheds_15s.nc* created above
-  3. The *maskfile.nc* created above
-  4. The *HydroRIVERS_v10.shp* or the clipped down file created above.
+    1. The *gridfile.nc* created above
+    2. The *HydroSheds_15s.nc* created above
+    3. The *maskfile.nc* created above
+    4. The *HydroRIVERS_v10.shp* or the clipped down file created above.
 2. Loop over the gridcell of the coarse destination grid and for all the selected ($mask == 2$) points falling in the polygon enclosed by the gridcell compute the "high" ($50$ percentile) and "low" ($10$ percentile) values.
 3. Select one value or the other if the gridcell intersects a river basin as defined by the shapefile vectors simplified to a target resolution.
 4. Write the final (hopefully still) conditioned coarse DEM file.
 
 Once this is done, the input files for the CHyM preproc are ready:
 
-  * gridfile.nc : File containing the grid geolocation informations
-  * maskfile.nc : CHyM land sea mask
-  * landfile.nc : Land use categories
-  * demfile.nc : Conditioned Digital elevation model topography
+  * *gridfile.nc* : File containing the grid geolocation informations
+  * *maskfile.nc* : CHyM land sea mask
+  * *landfile.nc* : Land use categories
+  * *demfile.nc* : Conditioned Digital elevation model topography
+  * *rivernet.nc* : OPTIONAL AND CURRENTLY NOT USED
 
 Proceed!
