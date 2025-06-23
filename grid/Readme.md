@@ -64,7 +64,7 @@ The result should be the the two files:
 
 #### Optional:
 
-The user may want to create a clipped down version of the global HydroEivers shape file (same source as Hydrosheds). For the Mediterranean (NOT USED!) this would boil down to:
+The user may want to create a clipped down version of the global HydroRivers shape file (same source as Hydrosheds). For the Mediterranean (NOT USED!) this would boil down to:
 
      ogr2ogr -clipsrc -7.0 27.0 48.5 63.5 filtered.shp HydroRIVERS_v10.shp 
 
