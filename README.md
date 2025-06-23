@@ -49,7 +49,7 @@ with $\delta$ configurable parameter, currently set to $\delta = 5.5$.
 
 $Q$ is the flow rate of water discharge, $S$ is the slope, $R$ is the hydraulic radius, linear function of the drained area $D$ as in:
 
-$$R = \alpha + \beta max(D,D_{min})^{\gamma}$$
+$$R = \alpha + \beta \max(D,D_{min})^{\gamma}$$
 
 with $\alpha$, $\beta$, $\gamma$ and $D_{min}$ calibration coefficients. Values used are:
 
