@@ -18,7 +18,7 @@ Major modification with respect to Fabio code is the introduction of:
 
 For the description of the Cellular Automata method creating the river network, the user can look at [Coppola et al. paper](https://www.tandfonline.com/doi/abs/10.1623/hysj.52.3.579).
 
-The time integration in CHyM-roff requires input data for the *runoff* physical variable, which is a common product of any Land model component of most NWP or GCM models, iand is generally defined as the the portion of precipitation that doesn't infiltrate into the soil or evaporate and is "expected" to flow towards streams, rivers, and other bodies of water.
+The time integration in CHyM-roff requires input data for the *runoff* physical variable, which is a common product of any Land model component of most NWP or GCM models, and is generally defined as the portion of precipitation that doesn't infiltrate into the soil or evaporate and is "expected" to flow towards streams, rivers, and other bodies of water.
 
 Because the CHyM model does not have a description of the ground but only takes care of the water transmission phase, the infiltration part of the original CHyM model is not present in the CHyM-roff model, which simulates only the momentum equation:
 
@@ -38,15 +38,15 @@ with $\alpha$, $\beta$, $\gamma$ and $D_{min}$ calibration coefficients. Values 
 
 $\alpha = 0.0015$ ($cpar2$ in the preproc namelist), $\beta = 0.05$ ($cpar3$ in the preproc namelist), $\gamma = \frac{1}{3}$ ($cpar4$ in the preproc namelist) and $D_{min} = 100 km^2$ ($cpar6$ in the preproc namelist).
 
-If the drain area is less than the threshold value $D_{min}$, the $n$ function is modified to be:
+If the drain area $D$ is less than the threshold value $D_{min}$, the $n$ function is modified to be:
 
 $$n(M) = \frac{M}{1+(\delta-1) \frac{1+(D-D_{min})}{D_{min}}}$$
 
-Once the flow rate is computed, using the continuity equation for the water:
+Once the flow rate $Q$ is computed, using the continuity equation for the water:
 
 $$\frac{\partial A}{\partial t} + \frac{\partial Q}{\partial x} = q_c$$
 
-where $q_c$ is the water per length unit calculated from the input runoff, the river discharge can be computed by time integration with a configurable timestep as a fraction ($step in chymroff namelist) of the input ($dstep$ in the chymroff namelist) time step.
+where $q_c$ is the water per length unit calculated from the input runoff, the river discharge can be computed by time integration with a configurable timestep as a fraction ($step$ in chymroff namelist) of the input time step ($dstep$ in the chymroff namelist).
 
 The optional irrigation loss mod introduced acts by reducing the water per unit lenght available for flow by a factor changing on a monthly basis:
 
@@ -57,7 +57,7 @@ and allowing for a loss of the water reservoir:
 $$W_a = (1-r_l r_i) W_a$$
 
 where $r_i$ is a factor changing with calendar month, and $r_l$ is a constant.
-The values can be tuned in the chymroff namelist ($irloss$ and $irmonfac$).
+The values can be tuned in the chymroff namelist ($irloss$ and $irmonfac$). Setting all to $0$ disables the mod.
 
 ## Steps to run
 
