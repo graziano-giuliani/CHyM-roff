@@ -2,12 +2,9 @@
 
 The river routing model CHyM-roff is derived from hydrological model CHyM.
 
-The code in this repository is a fork of the original work in ICTP by
-Fabio Di Sante modified by Graziano Giuliani to be used in the evaluation
-of the RegCM-ES1-1 ICTP coupled Regional Model over the Mediterranean
-basin [in this repository](https://github.com/graziano-giuliani/MED12-ocean-mit)
+The code in this repository is a fork of the original work in ICTP by Fabio Di Sante modified by [Graziano Giuliani](https://www.ictp.it/member/graziano-giuliani) to be used in the evaluation of the RegCM-ES1-1 ICTP coupled Regional Model over the Mediterranean basin [in this repository](https://github.com/graziano-giuliani/MED12-ocean-mit)
 
-The code n this repository has its own pre-processing (extracted from the original CETEMPS CHyM code [here](https://github.com/graziano-giuliani/CHyM)), which I have forked for simple bug fixing.
+The code in this repository has its own pre-processing (extracted from the original CETEMPS CHyM code [here](https://github.com/graziano-giuliani/CHyM)), which I have forked for simple bug fixing.
 
 Major modification with respect to Fabio code is the introduction of:
 
@@ -19,15 +16,11 @@ Major modification with respect to Fabio code is the introduction of:
 6. Revised I/O layer to be used in offline coupling with MITgcm
 7. General code revision and optimization: you can diff with Fabio [repository](https://github.com/fdisante/CHyM-roff) for the full list of modifications.
 
-The user should first get into the grid directory to create the input for the preproc model. When the input set for the preproc is ready, the creation of the hydrological river drain network and the transmission parameters is done by running the preproc program:
-
-    1. preproc preproc.namelist
-
 For the description of the Cellular Automata method creating the river network, the user can look at [Coppola et al. paper](https://www.tandfonline.com/doi/abs/10.1623/hysj.52.3.579).
 
-The time integration requires in input monthly files for the *runoff* variable, which is a common product of the Land model component of NWP or GCM models, as the the portion of precipitation that doesn't infiltrate into the soil or evaporate and is "expected" to flow towards streams, rivers, and other bodies of water.
+The time integration in CHyM-roff requires input data for the *runoff* physical variable, which is a common product of any Land model component of most NWP or GCM models, iand is generally defined as the the portion of precipitation that doesn't infiltrate into the soil or evaporate and is "expected" to flow towards streams, rivers, and other bodies of water.
 
-Because the CHyM model does not have a description of the ground but only takes care of the water transmission phase, the infiltration part of the original CHyM model is not present in the CHyM-roff model, which just simulates the momentum equation:
+Because the CHyM model does not have a description of the ground but only takes care of the water transmission phase, the infiltration part of the original CHyM model is not present in the CHyM-roff model, which simulates only the momentum equation:
 
 $$Q = \frac{\sqrt{S} R^{\frac{2}{3}}}{n} A$$
 
