@@ -49,4 +49,4 @@ with $\beta$, $\gamma$ and $\delta$ calibration coefficients. Once the flow rate
 
 $$\frac{\partial A}{\partial t} + \frac{\partial Q}{\partial x} = q_c$$
 
-where qc is the water per length unit calculated from the input runoff.
+where $q_c$ is the water per length unit calculated from the input runoff.
