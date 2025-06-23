@@ -38,12 +38,17 @@ The GLCC data can be otianed from the USGS [here](https://doi.org/10.5066/F7GB23
 
 ### Interpolate on regional domain
 
-The globla files are high resolution and BIG, so the first step is to cut a
-smapper area and interpolate the land cover area onto the chosen grid.
+The global files are high resolution and BIG, so the first step is to cut a
+smaller area and interpolate the land cover area onto the chosen grid.
 
-The user can find a python script doing these step. It needs the user to
+The user can find a python script doing these steps. It needs the user to
 have installed [cdo](https://code.mpimet.mpg.de/projects/cdo) and
-[GDAL](https://gdal.org/en/stable). Once the two input global dataset files
+[GDAL](https://gdal.org/en/stable).
+
+IT IS USER TASK TO EXAMINE THE python SCRIPTS AND VERIFY ALL THE PACKAGES
+IMPORTED ARE AVAILABLE ON HER SYSTEM.
+
+Once the two input global dataset files
 are copied or linked in this directory (*hyd_glo_dem_15s.tif* and
 *gbogegeo20.tif*) and the *gridfile.nc* is present, the user can run the
 interpolation script:
