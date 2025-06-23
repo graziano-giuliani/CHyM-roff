@@ -41,12 +41,12 @@ Because the CHyM model does not have a description of the ground but only takes 
 
 $$Q = \frac{\sqrt{S} R^{\frac{2}{3}}}{n} A$$
 
-where $Q$ is the flow rate of water discharge, $S$ is the slope, $R$ is the hydraulic radius, linear function of the drained area $D$ as in:
+where $n$ is the Manning coefiicient, $Q$ is the flow rate of water discharge, $S$ is the slope, $R$ is the hydraulic radius, linear function of the drained area $D$ as in:
 
-$$R = \beta + \gamma D^{delta}$$
+$$R = \beta + \gamma D^{\delta}$$
 
-with $\beta$, $\gamma$ and $\delta$ calibration coefficients. Once the flow rate is computed, using the continuity equation for the water the river discharge is computed:
+with $\beta$, $\gamma$ and $\delta$ calibration coefficients. Once the flow rate is computed, using the continuity equation for the water:
 
 $$\frac{\partial A}{\partial t} + \frac{\partial Q}{\partial x} = q_c$$
 
-where $q_c$ is the water per length unit calculated from the input runoff.
+where $q_c$ is the water per length unit calculated from the input runoff, the river discharge can be computed by time integration with a configurable timestep.
