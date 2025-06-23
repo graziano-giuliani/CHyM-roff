@@ -54,7 +54,7 @@ $$q_c = \frac{1 - r_i}{dt} q_c$$
 
 and allowing for a loss of the water reservoir:
 
-$$\frac{\partial A}{\partial t)\vert_{irr} = \frac{1 - r_l r_i}{dt} A$$
+$$\left.\frac{\partial A}{\partial t) \right|_{irr} = \frac{1 - r_l r_i}{dt} A$$
 
 where $r_i$ is a factor changing with calendar month, and $r_l$ is a constant.
 The values can be tuned in the chymroff namelist ($irloss$ and $irmonfac$). Setting all to $0$ disables the mod.
