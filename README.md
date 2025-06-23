@@ -95,7 +95,7 @@ In principle, given the global coverage of the input data, the model can run on 
 
 ### Run the *preproc* program
 
-Change into the run directory and copy over or link the above described input file from the grid directory. The file names are not important, the use can set their values in the namelist files.
+Change into the run directory and copy over or link the above described input file from the *grid* directory and the model binary files from the *bin* directory. The file names are not important, the use can set their values in the namelist files.
 
 The model parameters, above described, can be changed in the input namelist file. The name of the file is not relevant, it is important the value specified on the command line argument when running the program:
 
@@ -115,7 +115,7 @@ Common is to use the program [cdo](https://code.mpimet.mpg.de/projects/cdo) for 
 
 An example is:
 
-    cdo remapcon,gridfile.nc global/runoff_1996.nc runoff_1996.nc
+      cdo remapcon,gridfile.nc global/runoff_1996.nc runoff_1996.nc
 
 The data are expected to be divided in yearly files, containg the runoff data.
 
