@@ -7,9 +7,7 @@ Fabio Di Sante modified by Graziano Giuliani to be used in the evaluation
 of the RegCM-ES1-1 ICTP coupled Regional Model over the Mediterranean
 basin [in this repository](https://github.com/graziano-giuliani/MED12-ocean-mit)
 
-The code here has its own pre-processing (extracted from the original CETEMPS
-CHyM code [here](https://github.com/graziano-giuliani/CHyM), which I have
-forked for simple bug fixing.
+The code n this repository has its own pre-processing (extracted from the original CETEMPS CHyM code [here](https://github.com/graziano-giuliani/CHyM)), which I have forked for simple bug fixing.
 
 Major modification with respect to Fabio code is the introduction of:
 
