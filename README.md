@@ -48,7 +48,7 @@ $$\frac{\partial A}{\partial t} + \frac{\partial Q}{\partial x} = q_c$$
 
 where $q_c$ is the water per length unit calculated from the input runoff, the river discharge can be computed by time integration with a configurable timestep as a fraction ($step$ in chymroff namelist) of the input time step ($dstep$ in the chymroff namelist).
 
-The optional irrigation loss mod introduced acts by reducing the water per unit lenght available for flow by a factor changing on a monthly basis for the gridcells where a "crop type" category is present (classes $30,31,35,36,37,38,39,76,92,93,94,95,96=$):
+The optional irrigation loss mod introduced acts by reducing the water per unit lenght available for flow by a factor changing on a monthly basis for the gridcells where a "crop type" category is present (classes $30,31,35,36,37,38,39,76,92,93,94,95,96$):
 
 $$q_c = 1 - \frac{r_i}{dt} q_c$$
 
