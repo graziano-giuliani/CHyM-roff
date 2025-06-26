@@ -88,7 +88,7 @@ module mod_model
           if (luse(j,i) /= ocean .and. idir >= 1 .and. idir <= 8) then
              ! m3 of water recharge in the  grid cell
              rainload = chym_area(j,i)*1.0e+06*(chym_runoff(j,i))*deltat
-             h2o_sub(j,i) = h2o_sub(j,i) + wkm1_sub(j,i) + convfac*rainload
+             h2o_sub(j,i) = h2o_sub(j,i) + wkm1_sub(j,i) + rainload
              h2o_sub(j,i) = max(h2o_sub(j,i),0.0)
              if ( farm(j,i) ) then
                rirf = irmonfac(imon)/deltat

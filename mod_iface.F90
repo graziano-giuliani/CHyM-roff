@@ -252,6 +252,7 @@ module mod_iface
         call read_runoff(hourstep/dstep+inirun)
         do j=1,nbc
           do i=1,nlc
+            ! Transform in m/s from the requested mm/s in the input.
             chym_runoff(i,j) = chym_runoff(i,j) * 0.001
             if (chym_runoff(i,j) < 0.0 ) then
               chym_runoff(i,j) = 0.0

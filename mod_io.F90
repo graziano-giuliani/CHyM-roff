@@ -972,9 +972,9 @@ module mod_io
           end if
           first = .false.
         end if
-      call nio_check(nf90_get_var(ncid, varid, chym_runoff(:,:),        &
+        call nio_check(nf90_get_var(ncid, varid, chym_runoff(:,:),        &
            start = (/ 1, 1, stepr /), count = (/nlc , nbc, 1 /)))
-
+        chym_runoff = chym_runoff*convfac
       end if
 
       call mpi_bcast(chym_runoff(1,1),nbc*nlc,MPI_REAL,0,mycomm,mpierr)
