@@ -5,7 +5,7 @@
  irloss = 0.07,           ! Irrigation loss - zero for no loss
  ! Monthly irrigation removal - zero for no withdrawaaq
  !          Jan  Feb  Mar  Apr  May  Jun  Jul  Aug  Sep  Oct  Nov  Dec
- irmonfac = 0.0, 0.0, 0.0, 0.1, 0.2, 0.3, 0.4, 0.2, 0.1, 0.0, 0.0, 0.0,
+ irmonfac = 0.0, 0.0, 0.0, 0.0, 0.2, 0.3, 0.4, 0.3, 0.0, 0.0, 0.0, 0.0,
 /
 
 &inputparam
