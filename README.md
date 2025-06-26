@@ -22,7 +22,7 @@ The time integration in CHyM-roff requires input data for the *runoff* physical 
 
 Because the CHyM model does not have a description of the ground but only takes care of the water transmission phase, the infiltration part of the original CHyM model is not present in the CHyM-roff model, which simulates only the momentum equation:
 
-$$V = \frac{\sqrt{S} R^{\frac{2}{3}}}{n}$$
+$$q = \frac{\sqrt{S} R^{\frac{2}{3}}}{n}$$
 
 where $n$ is a function of the Manning coefiicient $M$:
 
@@ -30,7 +30,7 @@ $$n(M) = \frac{M}{\delta}$$
 
 with $\delta$ configurable parameter, currently set to $\delta = 5.5$ ($cpar8$ in the preproc namelist).
 
-$V$ is the flow rate of water discharge, $S$ is the slope, $R$ is the hydraulic radius, linear function of the drained area $D$ as in:
+$q$ is the flow of water discharge, $S$ is the slope, $R$ is the hydraulic radius, linear function of the drained area $D$ as in:
 
 $$R = \alpha + \beta \max(D,D_{min})^{\gamma}$$
 
@@ -42,14 +42,13 @@ If the drain area $D$ is less than the threshold value $D_{min}$, the $n$ functi
 
 $$n(M) = \frac{M}{1+(\delta-1) \frac{1+(D-D_{min})}{D_{min}}}$$
 
-Once the flow rate $V$ is computed, using the continuity equation for
-the total water $A$:
+Once the flow $q$ is computed, using the continuity equation for the total water $A$, stating that the water per unit element changes at a rate equal to the difference between outflow and inflow plus any source term:
 
-$$\frac{\partial A}{\partial t} + \frac{\partial A}{\partial x} = q_c$$
+$$\frac{\partial A}{\partial t} + \frac{\partial q}{\partial x} = q_c$$
 
-where $q_c$ is the water per length unit calculated from the input runoff, the river discharge $Q$ can be computed by time integration with a configurable timestep as a fraction ($step$ in chymroff namelist) of the input runoff data time step ($dstep$ in the chymroff namelist).
+the river discharge $Q$ can be computed by time integration with a configurable timestep as a fraction ($step$ in chymroff namelist) of the input runoff data time step ($dstep$ in the chymroff namelist). $q_c$ is the water per length unit sourced from the input runoff.
 
-$$Q = V A(x,t)$$
+$$Q = q A(x,t)$$
 
 The optional irrigation loss mod introduced acts by reducing the water per unit lenght available for flow by a factor changing on a monthly basis for the gridcells where a "crop type" category is present (classes $30,31,35,36,37,38,39,76,92,93,94,95,96$):
 
