@@ -47,7 +47,7 @@ the total water $A$:
 
 $$\frac{\partial A}{\partial t} + \frac{\partial A}{\partial x} = q_c$$
 
-where $q_c$ is the water per length unit calculated from the input runoff, the river discharge $Q$ can be computed by time integration with a configurable timestep as a fraction ($step$ in chymroff namelist) of the input time step ($dstep$ in the chymroff namelist).
+where $q_c$ is the water per length unit calculated from the input runoff, the river discharge $Q$ can be computed by time integration with a configurable timestep as a fraction ($step$ in chymroff namelist) of the input runoff data time step ($dstep$ in the chymroff namelist).
 
 $$Q = \alpha A(x,t)$$
 
