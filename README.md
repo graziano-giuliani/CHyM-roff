@@ -46,7 +46,7 @@ Once the flow $q$ is computed, using the continuity equation for the total water
 
 $$\frac{\partial A}{\partial t} + \frac{\partial q}{\partial x} = q_c$$
 
-the river discharge $Q$ can be computed by time integration with a configurable timestep as a fraction ($step$ in chymroff namelist) of the input runoff data time step ($dstep$ in the chymroff namelist). $q_c$ is the water per length unit sourced from the input runoff.
+can be used to compute the river discharge $Q$ by time integration with a configurable timestep as a fraction ($step$ in chymroff namelist) of the input runoff data time step ($dstep$ in the chymroff namelist). $q_c$ is the water per length unit sourced from the input runoff.
 
 $$Q = q A(x,t)$$
 
