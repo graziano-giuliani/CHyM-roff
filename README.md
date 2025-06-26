@@ -52,7 +52,7 @@ $$Q = q A(x,t)$$
 
 The optional irrigation loss mod introduced acts by reducing the water per unit lenght available for flow by a factor changing on a monthly basis for the gridcells where a "crop type" category is present (classes $30,31,35,36,37,38,39,76,92,93,94,95,96$):
 
-$$q_c = \left( 1 - \frac{r_i}{dt} \right) q_c$$
+$$\left. q_c \right|_{i} = \left( 1 - \frac{r_i}{dt} \right) q_c$$
 
 and allowing for a loss of the water reservoir:
 
