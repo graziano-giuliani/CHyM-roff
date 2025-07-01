@@ -35,16 +35,17 @@ module mod_crtstat
   subroutine applymask
     implicit none
     integer :: i , j
+    integer , parameter :: fillin = 76
     do j = 1 , nlat
       do i = 1 , nlon
-        if ( mask(i,j) >= 1 ) luc(i,j) = 15
+        if ( mask(i,j) < 2 ) luc(i,j) = 15
         if ( dem(i,j) <= 0.0 ) dem(i,j) = 1.0
       end do
     end do
     do j = 1 , nlat
       do i = 1 , nlon
-        if ( luc(i,j) == 15 .and. mask(i,j) == 0 ) luc(i,j) = 65
-        if ( luc(i,j) == 14 ) luc(i,j) = 46
+        if ( luc(i,j) == 15 .and. mask(i,j) == 2 ) luc(i,j) = fillin
+        if ( luc(i,j) == 14 ) luc(i,j) = fillin
       end do
     end do
     do j = 1 , nlat
@@ -191,9 +192,13 @@ module mod_crtstat
       do i = 2 , nlon - 1
         k = fmap(i,j)
         if ( luc(i,j)/=ocean .and. k>0 .and. k<=8 ) then
-          accl(i,j) = (dem(i,j)-dem(i+ir(k),j+jr(k)))  &
-                      /distance(lat(i,j),lon(i,j),lat(i+ir(k),j+jr(k)), &
-                      lon(i+ir(k),j+jr(k)))
+          if ( mask(i+ir(k),j+jr(k)) == 0 ) then
+            accl(i,j) = 0.0
+          else
+            accl(i,j) = (dem(i,j)-dem(i+ir(k),j+jr(k)))  &
+                        /distance(lat(i,j),lon(i,j),lat(i+ir(k),j+jr(k)), &
+                        lon(i+ir(k),j+jr(k)))
+          end if
           if ( accl(i,j) <= 1.0E-05 ) then
             noflow(i,j) = 8
             ncor = ncor + 1
@@ -563,11 +568,9 @@ module mod_crtstat
     !!!
     wrk2 = 0
     alfa = 0.0
-    xgamma = 0.33
-    delta = cpar8           ! Param. for land/channel flow
+    xgamma = cpar4
     tresh = cpar6
-    alfamin = 0.10         ! Minimum value of surface runoff speed
-    alfamax = 3.0          ! Maximum value of surface runoff speed
+    delta = cpar8
     do i = 2 , nlon - 1
       do j = 2 , nlat - 1
         idir = fmap(i,j)
@@ -582,18 +585,13 @@ module mod_crtstat
           dx(i,j) = distance(lat(i,j),lon(i,j), &
                              lat(i+ir(idir),j+jr(idir)), &
                              lon(i+ir(idir),j+jr(idir)))
-          if ( drai(i,j)>tresh ) then
+          if ( drai(i,j) < tresh ) then
+            enne = mann/(1.+(delta-1.)*(1.+max((drai(i,j)-tresh),0.0)/tresh))
+          else
             enne = mann/delta
-          else
-            enne = mann/(1+(delta-1)*(1+(drai(i,j)-tresh)/tresh))
           end if
-          hrad = cpar2 + cpar3*((drai(i,j)*1.E00)**xgamma)
-          if ( enne > 1.0e-20 ) then
-            alfa(i,j) = ((hrad**0.6666*accl(i,j)**0.5)/(enne))
-            if ( alfa(i,j)<alfamin ) alfa(i,j) = alfamin
-          else
-            alfa(i,j) = alfamax
-          end if
+          hrad = cpar2 + cpar3*(max(drai(i,j),tresh)**xgamma)
+          alfa(i,j) = ((hrad**0.6666)*(accl(i,j)**0.5))/enne
         end if
       end do
     end do

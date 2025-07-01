@@ -8,20 +8,11 @@
 /
 
 &chymparam
-  ! Other known settings for Rhone basin:
-  ! cpar1 = 2.0e-06
-  ! cpar4 = 0.03
-  ! cpar5 = 0.00540
-  ! cpar9 = 200.0
-  cpar1  = 4.8e-07 ! Return flow factor
-  cpar2  = 0.0015  ! Alpha coefficients for hydraulic radius
-  cpar3  = 0.050   ! Beta coefficients for hydraulic radius
-  cpar4  = 0.050   ! Melting temperature factor
-  cpar5  = 0.0094  ! Melting shortwave rad. factor
-  cpar6  = 500.0   ! River/land threshold (Km2)
-  cpar7  = 90.0    ! Number of days to consider for return flow
+  cpar2  = 0.0015  ! Alpha coefficient for hydraulic radius
+  cpar3  = 0.050   ! Beta coefficient for hydraulic radius
+  cpar4  = 0.33    ! Gamma coefficient for hydraulic radius
+  cpar6  = 100.0   ! River/land threshold (Km2)
   cpar8  = 4.5     ! Reduction of land/channel manning coefficient
-  cpar9  = 200.0   ! River/land threshold (Km2) for returnflowcient
   ncyc1  = 100     ! Number of DEM Smoothing cycles by CA algorithm
   ncyc2  = 1000    ! Number of DEM Smoothing cycles by filling algorithm
   ncyc3  = 21      ! Number of cycles for CA Algorithm Correction
@@ -57,13 +48,13 @@
   manning(22)  =  0.160 !'Cool Conifer Forest',
   manning(23)  =  0.200 !'Cool Mixed Forest',
   manning(24)  =  0.200 !'Mixed Forest',
-  manning(25)  =  0.200 !'Cool Broadleaf Forest',
+  manning(25)  =  0.160 !'Cool Broadleaf Forest',
   manning(26)  =  0.200 !'Deciduous Broadleaf Forest',
   manning(27)  =  0.160 !'Conifer Forest',
   manning(28)  =  0.200 !'Montane Tropical Forests',
   manning(29)  =  0.200 !'Seasonal Tropical Forest',
   manning(30)  =  0.080 !'Cool Crops and Towns',
-  manning(31)  =  0.055 !'Crops and Town',
+  manning(31)  =  0.080 !'Crops and Town',
   manning(32)  =  0.200 !'Dry Tropical Woods',
   manning(33)  =  0.200 !'Tropical Rainforest',
   manning(34)  =  0.150 !'Tropical Degraded Forest',
@@ -108,7 +99,7 @@
   manning(73)  =  0.035 !'Water and Island Fringe',
   manning(74)  =  0.035 !'Land, Water, and Shore',
   manning(75)  =  0.035 !'Land and Water, Rivers',
-  manning(76)  =  0.035 !'Crop and Water Mixtures',
+  manning(76)  =  0.095 !'Crop and Water Mixtures',
   manning(77)  =  0.150 !'Southern Hemisphere Conifers',
   manning(78)  =  0.150 !'Southern Hemisphere Mixed Forest',
   manning(79)  =  0.150 !'Wet Sclerophylic Forest',
@@ -125,8 +116,8 @@
   manning(90)  =  0.100 !'Rain Green Tropical Forest',
   manning(91)  =  0.200 !'Woody Savanna',
   manning(92)  =  0.080 !'Broadleaf Crops',
-  manning(93)  =  0.045 !'Grass Crops',
-  manning(94)  =  0.040 !'Crops, Grass, Shrubs',
+  manning(93)  =  0.095 !'Grass Crops',
+  manning(94)  =  0.075 !'Crops, Grass, Shrubs',
   manning(95)  =  0.120 !'Evergreen Tree Crop',
   manning(96)  =  0.120 !'Deciduous Tree Crop',
   manning(97)  =  0.043 !'Not Used Code',

@@ -58,7 +58,7 @@ module mod_io
       integer :: iretval
       integer :: lun
 
-      namelist /iniparam/ convfac, thrriv
+      namelist /iniparam/ convfac, thrriv, irloss, irmonfac, efficiency
       namelist /inputparam/ isread, inirun, yday, dstep, step, &
                             tdninp, tdnini, tdnstk
       namelist /outparam/ iorstfreq, tdnsim
@@ -165,6 +165,7 @@ module mod_io
       if (.not. allocated(fmap)) allocate(fmap(nlc,nbc))
       if (.not. allocated(accl)) allocate(accl(nlc,nbc))
       if (.not. allocated(luse)) allocate(luse(nlc,nbc))
+      if (.not. allocated(farm)) allocate(farm(nlc,nbc))
       if (.not. allocated(port)) allocate(port(nlc,nbc))
       if (.not. allocated(port_out)) allocate(port_out(nlc,nbc))
 #ifdef RUNOFF
@@ -174,9 +175,6 @@ module mod_io
       if (.not. allocated(wkm1)) allocate(wkm1(nlc,nbc))
       if (.not. allocated(bwet)) allocate(bwet(nlc,nbc))
       if (.not. allocated(h2o)) allocate(h2o(nlc,nbc))
-      if (.not. allocated(accl)) allocate(accl(nlc,nbc))
-      if (.not. allocated(luse)) allocate(luse(nlc,nbc))
-      if (.not. allocated(port)) allocate(port(nlc,nbc))
       if (.not. allocated(wkm1)) allocate(wkm1(nlc,nbc))
       if (.not. allocated(bwet)) allocate(bwet(nlc,nbc))
       if (.not. allocated(h2o)) allocate(h2o(nlc,nbc))
@@ -224,13 +222,16 @@ module mod_io
         call nio_check(nf90_inq_varid(ncid, 'lus', varid),10)
         call nio_check(nf90_get_var(ncid, varid, luse(:,:)),11)
 
-        call nio_check(nf90_inq_varid(ncid, 'aer', varid),12)
-        call nio_check(nf90_get_var(ncid, varid, chym_area(:,:)),13)
+        call nio_check(nf90_inq_varid(ncid, 'alf', varid),12)
+        call nio_check(nf90_get_var(ncid, varid, alfa(:,:)),13)
 
-        call nio_check(nf90_inq_varid(ncid, 'dra', varid),14)
-        call nio_check(nf90_get_var(ncid, varid, chym_drai(:,:)),15)
+        call nio_check(nf90_inq_varid(ncid, 'aer', varid),14)
+        call nio_check(nf90_get_var(ncid, varid, chym_area(:,:)),15)
 
-        call nio_check(nf90_close(ncid),16)
+        call nio_check(nf90_inq_varid(ncid, 'dra', varid),16)
+        call nio_check(nf90_get_var(ncid, varid, chym_drai(:,:)),17)
+
+        call nio_check(nf90_close(ncid),18)
 
         print *, 'Done!'
 
@@ -247,6 +248,7 @@ module mod_io
       call mpi_bcast(corner_lon,4*nbc*nlc,MPI_REAL, 0,mycomm,mpierr)
       call mpi_bcast(fmap,nbc*nlc,MPI_REAL, 0,mycomm,mpierr)
       call mpi_bcast(accl,nbc*nlc,MPI_REAL, 0,mycomm,mpierr)
+      call mpi_bcast(alfa,nbc*nlc,MPI_REAL, 0,mycomm,mpierr)
       call mpi_bcast(luse,nbc*nlc,MPI_INT, 0,mycomm,mpierr)
       call mpi_bcast(chym_area,nbc*nlc,MPI_REAL, 0,mycomm,mpierr)
       call mpi_bcast(chym_drai,nbc*nlc,MPI_REAL, 0,mycomm,mpierr)
@@ -254,8 +256,8 @@ module mod_io
 
 #ifdef RUNOFF
       chym_lsm = 0.0
-      do i = 2, nlc-1
-        do j = 2 , nlc-1
+      do j = 2 , nbc-1
+        do i = 2, nlc-1
           idir = fmap(i,j)
           if ( idir >= 1 .and. idir <= 8 ) then
             ilnd = luse(i+ir(idir),j+jr(idir))
@@ -278,6 +280,26 @@ module mod_io
         end do
       end do
 #endif
+
+      do j = 2 , nbc-1
+        do i = 2, nlc-1
+          idir = fmap(i,j)
+          chym_dx(i,j) = geodistance(chym_lat(i,j),chym_lon(i,j), &
+                 chym_lat(i+ir(idir),j+jr(idir)),                 &
+                 chym_lon(i+ir(idir),j+jr(idir)))
+          if ( luse(i,j) == 30 .or. luse(i,j) == 31 .or. &
+               luse(i,j) == 35 .or. luse(i,j) == 36 .or. &
+               luse(i,j) == 37 .or. luse(i,j) == 38 .or. &
+               luse(i,j) == 39 .or. luse(i,j) == 76 .or. &
+               luse(i,j) == 92 .or. luse(i,j) == 93 .or. &
+               luse(i,j) == 94 .or. luse(i,j) == 95 .or. &
+               luse(i,j) == 96 ) then
+            farm(i,j) = .true.
+          else
+            farm(i,j) = .false.
+          end if
+        end do
+      end do
 
       if (isread /= 0) then
         if (myid == 0 ) then
@@ -950,9 +972,9 @@ module mod_io
           end if
           first = .false.
         end if
-      call nio_check(nf90_get_var(ncid, varid, chym_runoff(:,:),        &
+        call nio_check(nf90_get_var(ncid, varid, chym_runoff(:,:),        &
            start = (/ 1, 1, stepr /), count = (/nlc , nbc, 1 /)))
-
+        chym_runoff = chym_runoff*convfac
       end if
 
       call mpi_bcast(chym_runoff(1,1),nbc*nlc,MPI_REAL,0,mycomm,mpierr)
@@ -1112,5 +1134,26 @@ module mod_io
     call nio_check(nf90_put_var(ncid,vname_id,ival,istart,icount))
   end subroutine write_dynvar_integer4
 
+  real function geodistance(latt1,lonn1,latt2,lonn2)
+    implicit none
+    real, parameter :: rad = 6371000.0
+    real, parameter :: dpi = 6.2831855
+    real latt1,lonn1,latt2,lonn2,lt1,lt2,ln1,ln2,x,y
+    lt1=latt1*dpi/360.
+    lt2=latt2*dpi/360.
+    ln1=lonn1*dpi/360.
+    ln2=lonn2*dpi/360.
+    if (abs(latt1-latt2).lt.0.2.and.abs(lonn1-lonn2).lt.0.2) then
+        x=(rad*cos(lt1)*(ln1-ln2))*(rad*cos(lt2)*(ln1-ln2))
+        y=(rad*(lt1-lt2))**2
+        geodistance=sqrt(x+y)
+    else
+       x=sin(lt1)*sin(lt2)+cos(lt1)*cos(lt2)*cos((ln1)-(ln2))
+       if (x.gt.1) x=1.0
+       geodistance=acos(x)*rad
+     endif
+    if (geodistance.lt.0.1) geodistance=0.1
+    return
+  end function geodistance
 
-      end module mod_io
+end module mod_io
