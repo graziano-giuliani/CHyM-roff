@@ -1,7 +1,8 @@
 &iniparam
  convfac = .000277777777, ! conversion factor from input data units to m/s
                           ! ERA5 output is m/h (averaged over day) so:
-                          ! m/h = m/s * 3600s/h -> 1/3600
+                          ! mm/h = mm/s * 3600s/h -> 1/3600
+                          ! CORDEX output is mm/s so convfac is 1.0
  thrriv = 5400.0,         ! used only if compiled with -DRUNOFF
  efficiency = 0.95,       ! maximum efficiency in transfer
  irloss = 0.07,           ! Irrigation loss - zero for no loss
