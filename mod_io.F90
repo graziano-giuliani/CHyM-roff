@@ -129,11 +129,12 @@ module mod_io
       use netcdf
       implicit none
       integer :: ncid, dimid, varid
+      integer :: i , j, idir
 #ifdef RUNOFF
 #ifdef NILE
       integer :: ii, jj
 #endif
-      integer :: i, j, ilnd, idir
+      integer :: ilnd
 #endif
 
 !
