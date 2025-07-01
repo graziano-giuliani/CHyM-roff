@@ -2,6 +2,7 @@
 module mod_io
 
   use, intrinsic :: iso_fortran_env
+  use mpi
   use mod_param
   use mod_mpimess
   use mod_varandtypes
@@ -285,19 +286,21 @@ module mod_io
       do j = 2 , nbc-1
         do i = 2, nlc-1
           idir = fmap(i,j)
-          chym_dx(i,j) = geodistance(chym_lat(i,j),chym_lon(i,j), &
-                 chym_lat(i+ir(idir),j+jr(idir)),                 &
-                 chym_lon(i+ir(idir),j+jr(idir)))
-          if ( luse(i,j) == 30 .or. luse(i,j) == 31 .or. &
-               luse(i,j) == 35 .or. luse(i,j) == 36 .or. &
-               luse(i,j) == 37 .or. luse(i,j) == 38 .or. &
-               luse(i,j) == 39 .or. luse(i,j) == 76 .or. &
-               luse(i,j) == 92 .or. luse(i,j) == 93 .or. &
-               luse(i,j) == 94 .or. luse(i,j) == 95 .or. &
-               luse(i,j) == 96 ) then
-            farm(i,j) = .true.
-          else
-            farm(i,j) = .false.
+          if ( idir >= 1 .and. idir <= 8 ) then
+            chym_dx(i,j) = geodistance(chym_lat(i,j),chym_lon(i,j), &
+                   chym_lat(i+ir(idir),j+jr(idir)),                 &
+                   chym_lon(i+ir(idir),j+jr(idir)))
+            if ( luse(i,j) == 30 .or. luse(i,j) == 31 .or. &
+                 luse(i,j) == 35 .or. luse(i,j) == 36 .or. &
+                 luse(i,j) == 37 .or. luse(i,j) == 38 .or. &
+                 luse(i,j) == 39 .or. luse(i,j) == 76 .or. &
+                 luse(i,j) == 92 .or. luse(i,j) == 93 .or. &
+                 luse(i,j) == 94 .or. luse(i,j) == 95 .or. &
+                 luse(i,j) == 96 ) then
+              farm(i,j) = .true.
+            else
+              farm(i,j) = .false.
+            end if
           end if
         end do
       end do

@@ -20,13 +20,16 @@
 
 program main
 
+  use mpi
   use mod_iface
   use mod_mpimess
   use mod_varandtypes
 
   implicit none
 
-  call mpi_init(mpierr)
+  integer :: iprov
+
+  call mpi_init_thread(mpi_thread_single,iprov,mpierr)
   call mpi_comm_dup(mpi_comm_world,mycomm,mpierr)
   call mpi_comm_size(mycomm, nproc, mpierr)
   call mpi_comm_rank(mycomm, myid, mpierr)

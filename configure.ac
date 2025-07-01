@@ -52,8 +52,8 @@ fi
 ##old AC_CHECK_LIB([netcdff], [-lnetcdff])
 
 # Special Nile and Runoff on ocean for MIT !
-# AM_CPPFLAGS="-DNILE -DRUNOFF $AM_CPPFLAGS"
-# AC_SUBST(AM_CPPFLAGS)
+AM_CPPFLAGS="-DNILE -DRUNOFF $AM_CPPFLAGS"
+AC_SUBST(AM_CPPFLAGS)
 
 # Checks for header files.
 
@@ -183,8 +183,8 @@ AM_CONDITIONAL(CHYM_PARALLEL, [ test x"$PARALLEL" = "x1"])
 # Force Big endian I/O for known compilers
 if test -z "$COMPILER_GNU_TRUE"; then
 #for debugging
-  #FCFLAGS="-fconvert=big-endian -fno-range-check -finline-functions -g -O0 -fcheck=all -Wall -fbacktrace"
-  FCFLAGS="-fconvert=big-endian -fno-range-check -finline-functions "
+  FCFLAGS="-fconvert=big-endian -fno-range-check -finline-functions -g -O0 -fcheck=all -Wall -fbacktrace"
+  #FCFLAGS="-fconvert=big-endian -fno-range-check -finline-functions "
   CPRDEF="GNU"
   AC_SUBST(FCFLAGS)
 fi
@@ -199,6 +199,7 @@ fi
 if test -z "$COMPILER_INTEL_ONEAPI_TRUE"; then
   FCFLAGS="-convert big_endian -assume byterecl \
            -heap-arrays -finline-functions"
+  #FCFLAGS="-convert big_endian -assume byterecl -mieee-fp"
   CPRDEF="INTEL"
   AC_SUBST(FCFLAGS)
   LIBS=`echo $LIBS | sed -e 's/-Wl,--as-needed//g'`
@@ -236,6 +237,7 @@ if test -z "$COMPILER_GNU_TRUE"; then
 fi
 if test -z "$COMPILER_INTEL_ONEAPI_TRUE"; then
   FCFLAGS="-O2 -xHost -fp-model fast=2 $FCFLAGS"
+  #FCFLAGS="-O0 -g -traceback -warn all $FCFLAGS"
   AC_SUBST(FCFLAGS)
 fi
 if test -z "$COMPILER_INTEL_TRUE"; then

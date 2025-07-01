@@ -16,8 +16,8 @@ AC_DEFUN([AX_PROG_NF_CONFIG], [
   AC_REQUIRE([AC_PROG_EGREP])
 
   AC_CACHE_CHECK([if nf-config program is present],[ax_cv_prog_nf_config],[
-  AS_IF([nf-config --version 2>/dev/null | egrep -q '^netCDF '],
-        [ax_cv_prog_fc_config=yes], [ax_cv_prog_nf_config=no])
+  AS_IF([nf-config --version 2>/dev/null | egrep -q '.*'],
+        [ax_cv_prog_nf_config=yes], [ax_cv_prog_nf_config=no])
       ])
   AS_IF([test "$ax_cv_prog_nf_config" = "yes"], [[$1]], [[$2]])
 ])
@@ -43,36 +43,36 @@ AC_DEFUN([RR_PATH_NETCDF],[
   AC_CHECK_HEADER([netcdf.h],
                   [netcdf=yes], [netcdf=no])
 
-  if test "x$netcdf" = xno; then
+  if test "x$netcdf" = "xno"; then
       AC_MSG_ERROR([NetCDF include not found])
   fi
 
-  AC_CHECKING([for libnetcdf.a])
+  AC_CHECKING([for libnetcdf])
   AC_CHECK_LIB([netcdf], [nc_close],
                [netcdf=yes], [netcdf=no])
-  if test "x$netcdf" = xno; then
-    AC_CHECKING([if we need to link jpeg library for HDF4])
+  if test "x$netcdf" = "xno"; then
+    AC_CHECKING([if we need to link hdf5 library])
+    NC_LDFLAGS="$NC_LDFLAGS -L$HDF5_PREFIX/lib"
     LDFLAGS="$LDFLAGS $NC_LDFLAGS"
-    LIBS="$LIBS -ljpeg"
-    AC_CHECK_LIB([netcdf], [nc_enddef],
-    [netcdf=yes], [netcdf=no])
-    if test "x$netcdf" = xno; then
-      AC_CHECKING([if we need to link hdf5 library])
-      NC_LDFLAGS="$NC_LDFLAGS -L$HDF5_PREFIX/lib"
+    LIBS="$LIBS -lhdf5 -lhdf5_hl"
+    AC_CHECK_LIB([netcdf], [nc_sync],
+                 [netcdf=yes], [netcdf=no])
+    if test "x$netcdf" = "xno"; then
+      AC_CHECKING([if we need to link szlib library])
+      NC_LDFLAGS="$NC_LDFLAGS -L$SZIP_PREFIX/lib"
       LDFLAGS="$LDFLAGS $NC_LDFLAGS"
-      LIBS="$LIBS -lhdf5 -lhdf5_hl"
-      AC_CHECK_LIB([netcdf], [nc_sync],
+      LIBS="$LIBS -lsz"
+      AC_CHECK_LIB([netcdf], [nc_inq_libvers],
                    [netcdf=yes], [netcdf=no])
-      if test "x$netcdf" = xno; then
-        AC_CHECKING([if we need to link szlib library])
-        NC_LDFLAGS="$NC_LDFLAGS -L$SZIP_PREFIX/lib"
+      if test "x$netcdf" = "xno"; then
+        AC_CHECKING([if we need to link libraries for HDF4])
         LDFLAGS="$LDFLAGS $NC_LDFLAGS"
-        LIBS="$LIBS -lsz"
-        AC_CHECK_LIB([netcdf], [nc_inq_libvers],
-                     [netcdf=yes], [netcdf=no])
+        LIBS="$LIBS -lmfhdf -ldf -ljpeg"
+        AC_CHECK_LIB([netcdf], [nc_enddef],
+        [netcdf=yes], [netcdf=no])
       fi
     fi
-    if test "x$netcdf" = xno; then
+    if test "x$netcdf" = "xno"; then
       AC_MSG_ERROR([NetCDF library not found])
     fi
   fi
@@ -86,93 +86,188 @@ AC_DEFUN([RR_PATH_NETCDF],[
   AM_LDFLAGS="$NC_LDFLAGS $AM_LDFLAGS"
   AC_SUBST([AM_CPPFLAGS])
   AC_SUBST([AM_LDFLAGS])
-  AC_LANG_POP([C])
 
 # Netcdf Fortran interface can be placed in a separate libnetcdff
 #
   LDFLAGS="$LDFLAGS $NC_LDFLAGS"
-  AC_CHECKING([for libnetcdff.a])
   AC_CHECK_LIB([netcdf], [nf_close],
                [netcdf=yes], [netcdf=no])
   if test "x$netcdf" = xno; then
+    case $ac_cv_fc_mangling in
+       "lower case, underscore, no extra underscore")
+         search="nf_close_";;
+       "upper case, no underscore")
+         search="NF_CLOSE_";;
+       "lower case, double underscore")
+         search="nf_close__";;
+       "upper case, double underscore")
+         search="NF_CLOSE__";;
+       "lower case, no underscore")
+         search="nf_close";;
+       "lower case, no underscore, no extra underscore")
+         search="nf_close";;
+       *)
+         search="nf_close";;
+    esac
+    AC_CHECKING([for libnetcdff])
     LIBS="-lnetcdff $LIBS"
-    AC_CHECKING([for libnetcdff.a])
-    AC_CHECK_LIB([netcdff], [nf_close],
-                 [netcdf=yes], [netcdf=no])
-    if test "x$netcdf" = xno; then
-      AC_MSG_ERROR([NetCDF library not found])
-    fi
+    AC_CHECK_LIB([netcdff], [$search],
+               [netcdf=yes], [netcdf=no])
   fi
+  AC_LANG_POP([C])
   LDFLAGS="$save_LDFLAGS"
+  AC_SUBST([netcdf])
 
 ])
 
 dnl
 dnl autoconf macro for detecting NetCDF module file
-dnl 
+dnl
 
 AC_DEFUN([RR_PATH_NETCDF_F90],[
 
+  AC_LANG_PUSH([Fortran])
   AC_CHECKING([for NetCDF module file])
   save_FCFLAGS="$FCFLAGS"
 
-  for flag in "-I" "-M" "-p"; do
-    FCFLAGS="$flag$NC_PREFIX/include $save_FCFLAGS"
-    AC_COMPILE_IFELSE(
-      [AC_LANG_PROGRAM([[ ]],
-                       [[      use netcdf]])],
-                       [netcdf=yes; NC_FCFLAGS=$flag],
-                       [netcdf=no])
-    if test "x$netcdf" = xyes; then
-      break
+  if test -z "$NC_INCLUDES"; then
+    for flag in "-I" "-M" "-p"; do
+      FCFLAGS="$flag$NC_PREFIX/include $save_FCFLAGS"
+      AC_COMPILE_IFELSE(
+        [AC_LANG_PROGRAM([ ],
+                         [      use netcdf])],
+                         [netcdf=yes; NC_FCFLAGS=$flag],
+                         [netcdf=no])
+      if test "x$netcdf" = "xyes"; then
+        break
+      fi
+    done
+    if test "x$netcdf" = "xno"; then
+      AC_MSG_ERROR([NetCDF module not found])
     fi
-  done
 
-  if test "x$netcdf" = xno; then
-    AC_MSG_ERROR([NetCDF module not found])
+    FCFLAGS="$save_FCFLAGS"
+    AM_CPPFLAGS="$NC_FCFLAGS$NC_PREFIX/include $AM_CPPFLAGS"
+  else
+    FCFLAGS="$NC_INCLUDES $save_FCFLAGS"
+    AC_COMPILE_IFELSE(
+      [AC_LANG_PROGRAM([ ],
+                       [[      use netcdf]])],
+                       [netcdf=yes],
+                       [netcdf=no])
+
+    if test "x$netcdf" = "xno"; then
+      AC_MSG_ERROR([NetCDF module not found])
+    fi
+
+    FCFLAGS="$save_FCFLAGS"
+    AM_CPPFLAGS="$NC_INCLUDES $AM_CPPFLAGS"
   fi
+  AC_LANG_POP([Fortran])
 
-  FCFLAGS="$save_FCFLAGS"
-  AM_CPPFLAGS="$NC_FCFLAGS$NC_PREFIX/include $AM_CPPFLAGS"
   AC_SUBST([AM_CPPFLAGS])
 ])
 
-AC_DEFUN([RR_PATH_FORTRANGIS],[
+AC_DEFUN([RR_NETCDF4],[
+  AC_CHECKING([for NetCDF HDF5])
+  save_FCFLAGS="$FCFLAGS"
 
-  AC_CHECKING([for Fortran GIS])
-
-  save_CPPFLAGS="$CPPFLAGS"
-  save_LDFLAGS="$LDFLAGS"
-
-  CPPFLAGS="$CPPFLAGS $FGIS_INCLUDES"
-  AMDEPFLAGS="$AMDEPFLAGS $FGIS_INCLUDES"
-  LIBS="$LIBS -lfortrangis"
-  LDFLAGS="$LDFLAGS $FGIS_LDFLAGS"
-
-  AC_SUBST([AMDEPFLAGS])
-
-  for flag in "-I" "-M" "-p"; do
-    FCFLAGS="$flag$NC_PREFIX/include $save_FCFLAGS"
+  if test -z "$NC_INCLUDES"; then
+    for flag in "-I" "-M" "-p"; do
+      FCFLAGS="$flag$NC_PREFIX/include $save_FCFLAGS"
+      AC_COMPILE_IFELSE(
+        [AC_LANG_PROGRAM([ ],
+                         [
+         use netcdf
+         implicit none
+         integer :: imode
+         imode = nf90_netcdf4])],
+                         [hdf5=yes],
+                         [hdf5=no])
+      if test "x$hdf5" = "xyes"; then
+        AM_CPPFLAGS="${DEFINE}NETCDF4_HDF5 $AM_CPPFLAGS"
+        break
+      fi
+    done
+    FCFLAGS="$save_FCFLAGS"
+  else
+    FCFLAGS="$NC_INCLUDES $save_FCFLAGS"
     AC_COMPILE_IFELSE(
-      [AC_LANG_PROGRAM([[ ]],
-                       [[      use shapelib]])],
-                       [fgis=yes; FGIS=$flag],
-                       [fgis=no])
-    if test "x$fgis" = xyes; then
-      break
+      [AC_LANG_PROGRAM([ ],
+                       [
+         use netcdf
+         implicit none
+         integer :: imode
+         imode = nf90_netcdf4])],
+                       [hdf5=yes],
+                       [hdf5=no])
+
+    if test "x$hdf5" = "xyes"; then
+      AM_CPPFLAGS="${DEFINE}NETCDF4_HDF5 $AM_CPPFLAGS"
     fi
-  done
-
-  if test "x$fgis" = xno; then
-    AC_MSG_ERROR([Fortran GIS module not found])
+    FCFLAGS="$save_FCFLAGS"
   fi
+  AC_CHECKING([for NetCDF filtering capability])
+  FCFLAGS="$NC_INCLUDES $save_FCFLAGS"
+  AC_COMPILE_IFELSE(
+    [AC_LANG_PROGRAM([ ],
+                     [
+       use netcdf
+       implicit none
+       integer :: is,nc,iv
+       is = nf90_def_var_filter(nc,iv,1,1,(/1/))])],
+                     [ncfilter=yes],
+                     [ncfilter=no])
 
+  if test "x$ncfilter" = "xyes"; then
+    AM_CPPFLAGS="${DEFINE}NCFILTERS_AVAIL $AM_CPPFLAGS"
+  fi
   FCFLAGS="$save_FCFLAGS"
-  LDFLAGS="$save_LDFLAGS"
-  AM_CPPFLAGS="$FGIS_INCLUDES $AM_CPPFLAGS"
-  AM_LDFLAGS="$FGIS_LDFLAGS $AM_LDFLAGS"
   AC_SUBST([AM_CPPFLAGS])
-  AC_SUBST([AM_LDFLAGS])
+])
+
+AC_DEFUN([RR_CDF5],[
+  AC_CHECKING([for NetCDF CDF5 format])
+  AC_LANG_PUSH([Fortran])
+  save_FCFLAGS="$FCFLAGS"
+
+  if test -z "$NC_INCLUDES"; then
+    for flag in "-I" "-M" "-p"; do
+      FCFLAGS="$flag$NC_PREFIX/include $save_FCFLAGS"
+      AC_COMPILE_IFELSE(
+        [AC_LANG_PROGRAM([ ],
+                         [
+         use netcdf
+         implicit none
+         integer :: imode
+         imode = nf90_cdf5])],
+                         [cdf5=yes],
+                         [cdf5=no])
+      if test "x$cdf5" = "xyes"; then
+        AM_CPPFLAGS="${DEFINE}NETCDF_CDF5 $AM_CPPFLAGS"
+        break
+      fi
+    done
+    FCFLAGS="$save_FCFLAGS"
+  else
+    FCFLAGS="$NC_INCLUDES $save_FCFLAGS"
+    AC_COMPILE_IFELSE(
+      [AC_LANG_PROGRAM([ ],
+                       [
+         use netcdf
+         implicit none
+         integer :: imode
+         imode = nf90_cdf5])],
+                       [cdf5=yes],
+                       [cdf5=no])
+
+    if test "x$cdf5" = "xyes"; then
+      AM_CPPFLAGS="${DEFINE}NETCDF_CDF5 $AM_CPPFLAGS"
+    fi
+    FCFLAGS="$save_FCFLAGS"
+  fi
+  AC_LANG_POP([Fortran])
+  AC_SUBST([AM_CPPFLAGS])
 ])
 
 dnl @synopsis ACX_MPI([ACTION-IF-FOUND[, ACTION-IF-NOT-FOUND]])
@@ -243,7 +338,7 @@ AC_LANG_CASE([C], [
 [Fortran], [
 	AC_REQUIRE([AC_PROG_FC])
 	AC_ARG_VAR(MPIFC,[MPI Fortran compiler command])
-	AC_CHECK_PROGS(MPIFC, mpixfl2003 mpixlf2008 mpf90 cmpifc cmpif90c hf90 mpif90, $FC)
+	AC_CHECK_PROGS(MPIFC, mpifort mpiifort mpiifx mpixfl2003 mpixlf2008 mpf90 cmpifc cmpif90c hf90 mpif90, $FC)
 	acx_mpi_save_FC="$FC"
 	FC="$MPIFC"
 	AC_SUBST(MPIFC)
@@ -300,8 +395,8 @@ fi],
 		AC_MSG_RESULT(no)])
 fi],
 [Fortran], [if test x != x"$MPILIBS"; then
-	AC_MSG_CHECKING([for mpif.h])
-	AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[      include 'mpif.h'])],[AC_MSG_RESULT(yes)], [MPILIBS=""
+	AC_MSG_CHECKING([for mpi module])
+	AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[      use mpi])],[AC_MSG_RESULT(yes)], [MPILIBS=""
 		AC_MSG_RESULT(no)])
 fi])
 
@@ -322,3 +417,132 @@ else
 fi
 ])dnl ACX_MPI
 
+dnl
+dnl autoconf macro for detecting pNetCDF
+dnl
+
+AC_DEFUN([AX_PROG_PNETCDF_CONFIG], [
+  AC_REQUIRE([AC_PROG_EGREP])
+
+  AC_CACHE_CHECK([if pnetcdf-config program is present],[ax_cv_prog_pnetcdf_config],[
+  AS_IF([pnetcdf-config --version 2>/dev/null | egrep -q '(PnetCDF|parallel-netcdf) '],
+        [ax_cv_prog_pnetcdf_config=yes], [ax_cv_prog_pnetcdf_config=no])
+      ])
+  AS_IF([test "$ax_cv_prog_pnetcdf_config" = "yes"], [[$1]], [[$2]])
+])
+
+AC_DEFUN([RR_PATH_PNETCDF],[
+
+  AC_CHECKING([for Parallel NetCDF])
+
+  save_CPPFLAGS="$CPPFLAGS"
+  save_FCFLAGS="$FCFLAGS"
+  save_LDFLAGS="$LDFLAGS"
+
+  CPPFLAGS="$CPPFLAGS $NC_INCLUDES"
+  FCFLAGS="$CPPFLAGS $NC_INCLUDES"
+  AMDEPFLAGS="$AMDEPFLAGS $NC_INCLUDES"
+  LIBS="$LIBS $NC_LIBS"
+  LDFLAGS="$LDFLAGS $NC_LDFLAGS"
+
+  AC_SUBST([AMDEPFLAGS])
+
+  pnetcdf=no
+
+  AC_LANG_PUSH([C])
+  AC_CHECKING([for pnetcdf.h])
+  AC_CHECK_HEADER([pnetcdf.h],
+                  [pnetcdf=yes], [pnetcdf=no])
+
+  if test "x$pnetcdf" = "xno"; then
+      AC_MSG_ERROR([Parallel NetCDF include not found])
+  fi
+
+  AC_CHECKING([for libpnetcdf])
+  AC_CHECK_LIB([pnetcdf], [ncmpi_close],
+               [pnetcdf=yes], [pnetcdf=no])
+  if test "x$pnetcdf" = "xno"; then
+    AC_MSG_ERROR([Parallel NetCDF library not found])
+  fi
+
+  AC_LANG_POP([C])
+
+# Put them back to how they used to be and set the AM versions
+# The AM versions must be substituted explicitly
+
+  CPPFLAGS="$save_CPPFLAGS"
+  FCFLAGS="$save_FCFLAGS"
+  LDFLAGS="$save_LDFLAGS"
+  AM_CPPFLAGS="$NC_INCLUDES $AM_CPPFLAGS"
+  AM_LDFLAGS="$NC_LDFLAGS $AM_LDFLAGS"
+  AC_SUBST([AM_CPPFLAGS])
+  AC_SUBST([AM_LDFLAGS])
+])
+
+AC_DEFUN([RCM_FC_CHECK_IEEE_ARITHMETIC],[
+  # Init
+  fc_has_ieee_arithmetic="no"
+  AC_MSG_CHECKING([whether the Fortran compiler supports IEEE_ARITHMETIC])
+  # Try to compile a piece of code that uses the module.
+  AC_LANG_PUSH([Fortran])
+  AC_LINK_IFELSE([AC_LANG_PROGRAM([],
+    [[
+      use, intrinsic :: ieee_arithmetic
+      real :: val
+      if (ieee_is_nan(val)) then  ! NaN
+        write(*,*)"Hello NAN"
+      end if
+    ]])], [fc_has_ieee_arithmetic="yes"])
+  AC_LANG_POP([Fortran])
+  if test "${fc_has_ieee_arithmetic}" = "yes"; then
+    AC_DEFINE([HAVE_FC_IEEE_ARITHMETIC],1,
+      [Define to 1 if your Fortran compiler supports IEEE_ARITHMETIC module.])
+    FCFLAGS="${DEFINE}F2008 $FCFLAGS"
+    AC_SUBST(FCFLAGS)
+  fi
+  AC_MSG_RESULT([${fc_has_ieee_arithmetic}])
+]) # RCM_FC_CHECK_IEEE_ARITHMETIC
+
+AC_DEFUN([RCM_FC_CHECK_QUAD_PRECISION],[
+  # Init
+  fc_has_quad_precision="no"
+  AC_MSG_CHECKING([whether the Fortran compiler supports quadruple precision])
+  # Try to compile a piece of code that uses the module.
+  AC_LANG_PUSH([Fortran])
+  AC_LINK_IFELSE([AC_LANG_PROGRAM([],
+    [[
+      integer, parameter :: qp = selected_real_kind(32)
+      real(kind=qp) :: val
+    ]])], [fc_has_quad_precision="yes"])
+  AC_LANG_POP([Fortran])
+  if test "${fc_has_quad_precision}" = "yes"; then
+    AC_DEFINE([HAVE_FC_QUAD_PRECISION],1,
+      [Define to 1 if your Fortran compiler supports quadruple precision reals.])
+    FCFLAGS="${DEFINE}QUAD_PRECISION $FCFLAGS"
+    AC_SUBST(FCFLAGS)
+  fi
+  AC_MSG_RESULT([${fc_has_quad_precision}])
+]) # RCM_FC_CHECK_QUAD_PRECISION
+
+AC_DEFUN([RCM_MPI_CHECK_MPI3],[
+  # Init
+  mpifc_has_mpi3="no"
+  AC_MSG_CHECKING([whether the MPI compiler supports mpi3 interface])
+  # Try to compile a piece of code that uses the module.
+  acx_mpi_save_FC="$FC"
+  FC="$MPIFC"
+  AC_LANG_PUSH([Fortran])
+  AC_LINK_IFELSE([AC_LANG_PROGRAM([],
+    [[
+       call mpi_ineighbor_alltoallv
+    ]])], [mpifc_has_mpi3="yes"])
+  AC_LANG_POP([Fortran])
+  if test "${mpifc_has_mpi3}" = "yes"; then
+    AC_DEFINE([HAVE_MPI3],1,
+      [Define to 1 if your MPI library supports MPI3 interfaces.])
+    FCFLAGS="${DEFINE}USE_MPI3 $FCFLAGS"
+    AC_SUBST(FCFLAGS)
+  fi
+  FC="$acx_mpi_save_FC"
+  AC_MSG_RESULT([${mpifc_has_mpi3}])
+]) # RCM_MPI_CHECK_MPI3

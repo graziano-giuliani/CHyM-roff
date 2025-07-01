@@ -82,19 +82,12 @@ module mod_crtstat
 
   subroutine buildflowdirmap
     implicit none
-    character(len=2) , dimension(8) :: col
     integer :: i , ii , j , ncyc , nzero , nzero2
-    integer , dimension(8) :: icol
     real , dimension(0:8) :: rk
     real , dimension(nlon,nlat) :: plot , work
     integer , dimension(nlon,nlat) :: icl
     character(len=80) :: title
-    logical :: plotgeop , plotlake
     real , dimension(nlon,nlat) :: savedem
-    data icol/5 , 7 , 9 , 11 , 3 , 17 , 4 , 2/
-    data col/'NW' , 'N' , 'NE' , 'E' , 'SE' , 'S' , 'SW' , 'W'/
-    data plotlake/.false./
-    data plotgeop/.true./
 
     write(output_unit,'(/5x,a)') 'Building Flow Direction Map.'
     rk(0) = 0.0
@@ -561,7 +554,7 @@ module mod_crtstat
 
   subroutine runoffspeed
     implicit none
-    real :: alfamin , alfamax , delta , xgamma , mann , tresh , vmax
+    real :: alfamin , delta , xgamma , mann , tresh , vmax
     real :: enne , hrad
     real, dimension(nlon,nlat) :: wrk2 , wk
     integer :: i , idir , intstep , j , land

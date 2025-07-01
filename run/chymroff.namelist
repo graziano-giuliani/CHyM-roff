@@ -29,7 +29,7 @@
 /
 
 &timeparam
- sdate = 1977010100, ! Start date in YYYYMMDDHH
- edate = 1987123100, ! Start date in YYYYMMDDHH
+ sdate = 1979080100, ! Start date in YYYYMMDDHH
+ edate = 1987080100, ! Start date in YYYYMMDDHH
  calendar = 'gregorian',
 /
