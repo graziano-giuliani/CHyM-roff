@@ -13,6 +13,7 @@ color2 = 'blue'
 color3 = 'salmon'
 color4 = 'aqua'
 
+obspath = '/leonardo_work/ICT25_ESP/OBS/RIVERS/RivDIS1.1'
 #datapath = '/leonardo_work/ICT25_ESP/COUPLED/coupled/loop2/CORDEX-CMIP6'
 #cordexpath = 'DD/MED-12/ICTP/ERA5/evaluation/r1i1p1f1/RegCM-ES1-1/v1-r1/day'
 #varname = 'rivo'
@@ -50,8 +51,10 @@ riverlist = ( { 'name' : 'Danube',
                 'jloc' : 243},
             )
 
-stations = pd.read_csv('comp/STATION.DAT', sep='|', skiprows=1)
-rivdis = pd.read_csv('data/RIVDIS.DAT', sep='|', skiprows=1)
+stations = pd.read_csv(os.path.join(obspath,'comp','STATION.DAT'),
+        sep='|', skiprows=1)
+rivdis = pd.read_csv(os.path.join(obspath,'data','RIVDIS.DAT'),
+        sep='|', skiprows=1)
 rivdis['YEAR'] = pd.to_numeric(rivdis['YEAR'],
         downcast='integer', errors='coerce')
 rivdis['MONTH'] = pd.to_numeric(rivdis['MONTH'],
@@ -59,7 +62,7 @@ rivdis['MONTH'] = pd.to_numeric(rivdis['MONTH'],
 rivdis['DISCHRG'] = pd.to_numeric(rivdis['DISCHRG'],
         downcast='float', errors='coerce')
 #flist = os.path.join(datapath,cordexpath,varname,'*nc')
-flist = '../output/med_19????????.nc'
+flist = 'output/med_19????????.nc'
 rivofile = xr.open_mfdataset(flist, decode_coords=all,
         concat_dim="time", combine='nested')
 
