@@ -1,0 +1,40 @@
+&iniparam
+ convfac = .0002777777,   ! conversion factor from input data units to m/s
+                          ! ERA5 output is m/h (averaged over day) so:
+                          ! mm/h = mm/s * 3600s/h -> 1/3600
+                          ! CORDEX output is mm/s so convfac is 1.0
+ thrriv = 5400.0,         ! used only if compiled with -DRUNOFF
+ efficiency = 0.9999,     ! maximum efficiency in transfer
+ nfarm = 1,               ! How many class for irrigation
+ ifarm = 76,              ! Their codes
+ ! nfarm = 13
+ ! ifarm = 30, 31, 35, 36, 37, 38, 39, 76, 92, 93, 94, 95, 96
+ irloss = 0.10,           ! Irrigation loss - zero for no loss
+ ! Monthly irrigation removal - zero for no withdrawaaq
+ !          Jan  Feb  Mar  Apr  May  Jun  Jul  Aug  Sep  Oct  Nov  Dec
+ irmonfac = 0.8, 0.2, 0.5, 0.5, 0.0, 1.8, 1.8, 1.7, 0.9, 0.9, 0.5, 0.8,
+/
+
+&inputparam
+ isread = 0,   ! 0 = initial run (no restart)
+               ! 1 = read model restart file
+ inirun = 0,   ! Initial step in the input data file fmodel or runoff
+ dstep = 24,   ! Input runoff data timestep in hours
+ step  = 300,  ! Model steps per each input timestep
+ tdninp = 'input/runoff', ! Input file directory and prefix
+ tdnini = 'january_mean.nc',
+ tdnstk = 'chym_stk.nc',
+/
+
+&outparam
+ iorstfreq = 2,         ! 0 = no restart files
+                        ! 1 = yearly restart files
+                        ! 2 = monthly restart files
+ tdnsim = 'output/med', ! Output file directory and prefix
+/
+
+&timeparam
+ sdate = 1977010100, ! Start date in YYYYMMDDHH
+ edate = 1987123100, ! Start date in YYYYMMDDHH
+ calendar = 'gregorian',
+/
