@@ -59,7 +59,8 @@ module mod_io
       integer :: iretval
       integer :: lun
 
-      namelist /iniparam/ convfac, thrriv, irloss, irmonfac, efficiency
+      namelist /iniparam/ convfac, thrriv, efficiency, nfarm, ifarm, &
+              irloss, irmonfac
       namelist /inputparam/ isread, inirun, yday, dstep, step, &
                             tdninp, tdnini, tdnstk
       namelist /outparam/ iorstfreq, tdnsim
@@ -290,13 +291,7 @@ module mod_io
             chym_dx(i,j) = geodistance(chym_lat(i,j),chym_lon(i,j), &
                    chym_lat(i+ir(idir),j+jr(idir)),                 &
                    chym_lon(i+ir(idir),j+jr(idir)))
-            if ( luse(i,j) == 30 .or. luse(i,j) == 31 .or. &
-                 luse(i,j) == 35 .or. luse(i,j) == 36 .or. &
-                 luse(i,j) == 37 .or. luse(i,j) == 38 .or. &
-                 luse(i,j) == 39 .or. luse(i,j) == 76 .or. &
-                 luse(i,j) == 92 .or. luse(i,j) == 93 .or. &
-                 luse(i,j) == 94 .or. luse(i,j) == 95 .or. &
-                 luse(i,j) == 96 ) then
+            if ( any(ifarm(1:nfarm) == luse(i,j) ) ) then
               farm(i,j) = .true.
             else
               farm(i,j) = .false.

@@ -70,7 +70,7 @@ module mod_model
         do j = j1, j2
           idir = fmap(j,i)
           if (luse(j,i) /= ocean .and. idir >= 1 .and. idir <= 8) then
-            dm = port_sub(j,i)*deltat
+            dm = efficiency*port_sub(j,i)*deltat
             if ( dm > efficiency * h2o_sub(j,i) ) then
               dm = efficiency * h2o_sub(j,i)
             end if

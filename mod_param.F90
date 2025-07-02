@@ -2,7 +2,11 @@ module mod_param
 
   implicit none
 
-  real :: convfac = 1.0  ! for mm/s, kg/m^2/s. Set to 1/3.6 for m/h
+  integer, parameter :: lntypes = 110
+  integer, parameter :: ocean = 15
+  integer, parameter :: lake = 14
+
+  real :: convfac = 1.0/3600.0
   integer :: iostep , irstep , iqstep, ivar , rvar , qvar
   integer :: nlc,nbc,nlon,nlat
   integer :: inirun,step,yday,time,oldyear, ical
@@ -14,6 +18,8 @@ module mod_param
   character(len=256) :: filename,filenamerst,filenameqmax
   integer :: jahr1, jahr2, jahr3, jahr4
   integer :: isread, iorstfreq
+  integer :: nfarm
+  integer, dimension(lntypes) :: ifarm
   integer, dimension(12) :: mesi = &
       [ 31 , 28 , 31 , 30 , 31 , 30 , 31 , 31 , 30 , 31 , 30 , 31 ]
 
@@ -79,9 +85,6 @@ module mod_param
 
   real, allocatable :: chym_runoff(:,:)
 
-  integer, parameter :: lntypes = 110
-  integer, parameter :: ocean = 15
-  integer, parameter :: lake = 14
   integer , dimension(3) :: chunksizes
 
 #ifdef NILE
