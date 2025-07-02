@@ -83,9 +83,9 @@ for river, ax in zip(riverlist, axs.reshape(-1)):
     sigma1 = measure['DISCHRG'].std( ).values
 
     rivo = rivofile.isel(lon=river['iloc'],
-                         lat=river['jloc']).groupby('time.month')
-    data2 = rivo.mean( )[varname].values
-    sigma2 = rivo.std( )[varname].values
+                         lat=river['jloc'])
+    data2 = rivo[varname].groupby('time.month').mean( ).values
+    sigma2 = rivo[varname].resample(time='MS').mean( ).std( ).values
     months = np.linspace(1,12,12)
 
     ax.plot(months, data1, label='RivDIS v1.1 ('+

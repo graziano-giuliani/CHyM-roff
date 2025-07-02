@@ -1,14 +1,14 @@
 &iniparam
- convfac = .000277777777, ! conversion factor from input data units to m/s
+ convfac = 1.0,           ! conversion factor from input data units to m/s
                           ! ERA5 output is m/h (averaged over day) so:
                           ! mm/h = mm/s * 3600s/h -> 1/3600
                           ! CORDEX output is mm/s so convfac is 1.0
  thrriv = 5400.0,         ! used only if compiled with -DRUNOFF
  efficiency = 0.95,       ! maximum efficiency in transfer
- irloss = 0.07,           ! Irrigation loss - zero for no loss
+ irloss = 0.02,           ! Irrigation loss - zero for no loss
  ! Monthly irrigation removal - zero for no withdrawaaq
  !          Jan  Feb  Mar  Apr  May  Jun  Jul  Aug  Sep  Oct  Nov  Dec
- irmonfac = 0.0, 0.0, 0.0, 0.0, 0.2, 0.3, 0.4, 0.3, 0.0, 0.0, 0.0, 0.0,
+ irmonfac = 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.0, 0.0,
 /
 
 &inputparam
@@ -31,6 +31,6 @@
 
 &timeparam
  sdate = 1979080100, ! Start date in YYYYMMDDHH
- edate = 1987080100, ! Start date in YYYYMMDDHH
+ edate = 1987073100, ! Start date in YYYYMMDDHH
  calendar = 'gregorian',
 /
