@@ -18,7 +18,7 @@ module mod_param
   character(len=256) :: filename,filenamerst,filenameqmax
   integer :: jahr1, jahr2, jahr3, jahr4
   integer :: isread, iorstfreq
-  integer :: nfarm
+  integer :: nfarm = 0
   integer, dimension(lntypes) :: ifarm
   integer, dimension(12) :: mesi = &
       [ 31 , 28 , 31 , 30 , 31 , 30 , 31 , 31 , 30 , 31 , 30 , 31 ]
