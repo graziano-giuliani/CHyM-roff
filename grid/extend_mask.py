@@ -4,8 +4,6 @@ import os
 import sys
 from netCDF4 import Dataset
 import numpy as np
-import regionmask as rg
-import geopandas as gp
 
 mit = Dataset('mitgcm_mask.nc', 'r')
 lat = mit.variables["lat"][:]
@@ -23,8 +21,11 @@ dst.setncatts(mit.__dict__)
 dst.createDimension('lon', len(src.dimensions['grid_xsize']))
 dst.createDimension('lat', len(src.dimensions['grid_ysize']))
 
+replace_names = { 'x' : 'lon',
+		  'y' : 'lat' }
 for name, variable in mit.variables.items():
-    x = dst.createVariable(name, variable.datatype, variable.dimensions)
+    x = dst.createVariable(name, variable.datatype,
+		    (replace_names[x] for x in variable.dimensions))
     x.setncatts(mit[name].__dict__)
 
 dst.variables["lon"][:] = glon

@@ -54,58 +54,19 @@ totalmask = orthemall((maskmed,maskbls,masknaf1,masknaf2,masknaf3,masknaf4))
 bothmask = np.logical_and(landmask,totalmask)
 cleanmask = np.where(bothmask, 2, cleanmask)
 
-cleanmask[146:149,70] = 2
-cleanmask[284:289,219] = 2
-cleanmask[290,221:223] = 2
-cleanmask[286,247] = 2
-cleanmask[268,259] = 2
-cleanmask[103,209] = 2
-cleanmask[233,198] = 2
-cleanmask[229,205] = 2
-cleanmask[236,199] = 2
-cleanmask[235,200] = 2
-cleanmask[206,231] = 2
-cleanmask[142,197:199] = 2
-cleanmask[178,331] = 2
-cleanmask[176,331] = 2
-cleanmask[177,353] = 2
-cleanmask[88,210] = 2
-cleanmask[55:57,446] = 2
-cleanmask[57,450] = 2
-cleanmask[57,452] = 2
-cleanmask[58,451:453] = 2
-cleanmask[204,364] = 2
-cleanmask[166,336] = 2
-cleanmask[209,398] = 2
-cleanmask[211,398] = 2
-cleanmask[153,408] = 2
-cleanmask[153,408] = 2
-cleanmask[147,419] = 2
-cleanmask[349,438] = 2
-cleanmask[349,438] = 2
-cleanmask[355,489] = 2
-cleanmask[356,489] = 2
-cleanmask[358,449] = 2
-cleanmask[355,448] = 2
-cleanmask[352,449] = 2
-cleanmask[353,449] = 2
-cleanmask[355:357,448] = 2
-cleanmask[387,529] = 2
-cleanmask[205,364] = 2
-cleanmask[177,331] = 2
-cleanmask[177,331] = 2
-cleanmask[247,284] = 2
-cleanmask[56,448] = 2
-cleanmask[55,447:449] = 2
-cleanmask[54,447:449] = 2
-cleanmask[53,446:449] = 2
-cleanmask[52,447:450] = 2
-cleanmask[51,447:452] = 2
-cleanmask[51,447:452] = 2
-cleanmask[50,449] = 2
-cleanmask[50:45,450] = 2
-cleanmask[184,392:395] = 2
-
+# Fix the points where the basin mask is different from the landmask
+tmp = cleanmask[331:396,430:535] == 0
+cleanmask[331:396,430:535][tmp] = 2
+tmp = cleanmask[125:228,300:515] == 0
+cleanmask[125:228,300:515][tmp] = 2
+tmp = cleanmask[126:296,130:326] == 0
+cleanmask[126:296,130:326][tmp] = 2
+tmp = cleanmask[140:158,63:77] == 0
+cleanmask[140:158,63:77][tmp] = 2
+tmp = cleanmask[98:119,204:223] == 0
+cleanmask[98:119,204:223][tmp] = 2
+tmp = cleanmask[44:65,439:464] == 0
+cleanmask[44:65,439:464][tmp] = 2
 
 ds.variables["mask"][:] = cleanmask
 ds.close( )
